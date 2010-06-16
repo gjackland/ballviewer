@@ -47,7 +47,7 @@ public class AnalysisManager implements AnalyserChangeListener
 
 		// TODO: Faking this for now, we'll add proper plugin support later
 		ballAnalyserRegistry.add( CrystalAnalyser.class );
-		ballAnalyserRegistry.add( TestAnalyser.class );
+		//ballAnalyserRegistry.add( TestAnalyser.class );
 	}
 	
 	private final		BallViewerFramework			framework;
@@ -118,13 +118,34 @@ public class AnalysisManager implements AnalyserChangeListener
 		final	Analyser		analyser
 	)
 	{
-		// Make sure we can find the analyser
-		if( ballAnalysers.contains( analyser ) )
+//		// Make sure we can find the analyser
+//		if( ballAnalysers.contains( analyser ) )
+//		{
+//			( ( BallAnalyser )analyser ).analyseBalls( framework.getSystem() );
+//			return true;
+//		}
+//		return false;
+		update( framework.getSystem() );
+		return true;
+	}
+	
+	public void
+	update(
+		final StaticSystem		system
+	)
+	{
+		updateBallAnalysers( system );
+	}
+	
+	public void
+	updateBallAnalysers(
+		final StaticSystem		system
+	)
+	{
+		for( BallAnalyser bAnalyser: ballAnalysers )
 		{
-			( ( BallAnalyser )analyser ).analyseBalls( framework.getSystem() );
-			return true;
+			bAnalyser.updateAttributes( system );
 		}
-		return false;
 	}
 	
 	public void
@@ -135,5 +156,14 @@ public class AnalysisManager implements AnalyserChangeListener
 		{
 			ballAnalysers.get( indexOfAnalyser ).analyseBalls( framework.getSystem() );
 		}
+	}
+	
+	public void
+	addBallAnalyser(
+		final		BallAnalyser		newAnalyser
+	)
+	{
+		System.out.println( "Adding ball analyser: " + newAnalyser.getName() );
+		ballAnalysers.add( newAnalyser );
 	}
 }
