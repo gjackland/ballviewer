@@ -243,6 +243,17 @@ public class CrystalAnalyser extends BallAnalyser
 		
 	}
 	
+	AnalyserOutput[]
+	getAnalyserOutputs()
+	{
+		return null;
+	}
+	
+	void
+	updateAttributes( StaticSystem sys )
+	{
+	}
+	
 	/*
 	 *
 	 * This returns the total of differences between expected and observed results 

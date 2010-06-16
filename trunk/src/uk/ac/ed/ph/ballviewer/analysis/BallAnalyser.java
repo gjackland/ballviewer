@@ -7,4 +7,10 @@ public abstract class BallAnalyser< T extends Options > extends Analyser< T >
 {
 	abstract void
 	analyseBalls( StaticSystem system );
+	
+	abstract void
+	updateAttributes( StaticSystem system );
+	
+	abstract AnalyserOutput[]
+	getAnalyserOutputs();
 }
