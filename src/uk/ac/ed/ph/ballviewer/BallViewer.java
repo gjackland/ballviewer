@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import uk.ac.ed.ph.ballviewer.analysis.*;
-import uk.ac.ed.ph.ballviewer.gui.AnalysisMenu;
+import uk.ac.ed.ph.ballviewer.gui.*;
 import uk.ac.ed.ph.ballviewer.io.*;
 import uk.ac.ed.ph.ballviewer.math.*;
 
@@ -85,6 +85,10 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 															yVctr 			= new Vector3Panel( "Y", 4 ),
 															zVctr 			= new Vector3Panel( "Z", 4 ),
 															pVctr 			= new Vector3Panel( "P", 3 );
+															
+	
+	// System objects side panel											
+	private final			SystemObjectsPanel				sysObjPanel;
 	
 	
 	public BallViewer()
@@ -137,6 +141,7 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 			public void windowClosing( WindowEvent e ) { e.getWindow().dispose(); System.exit(0); }
 		});
 
+		sysObjPanel = new SystemObjectsPanel( framework );
 
 		// set up graph details
 		xmin=xmn; xmax=xmx; ymin=ymn; ymax=ymx; //graph corners
@@ -227,6 +232,7 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 		// put the infobar, canvas and control panel together
 		this.add( info,BorderLayout.NORTH );
 		this.add( canv,BorderLayout.CENTER );
+		this.add( new JPanel( new GridLayout( 1, 0 ) ), BorderLayout.EAST );
 		this.add( control,BorderLayout.SOUTH );
 		this.pack();    // this fits the frame around it all(neat)
 		
