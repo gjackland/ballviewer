@@ -13,8 +13,7 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 	private final	double 			ballValues[];										// The 'intensity' values assigned for each ball
 	private 		double 			min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;		// Min and max values for particles
 	
-	private final 	ContinuousAnalyserOutput valueOutput =
-		new ContinuousAnalyserOutput();
+	private final 	ContinuousAnalyserOutput valueOutput;
 	
 	public SingleValueBallAnalyser(
 		final String			name,
@@ -24,6 +23,7 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 		this.name			= name;
 		this.ballValues		= new double[ numBalls ];
 		options				= new SingleValueBallAnalyserOptions();
+		valueOutput			= new ContinuousAnalyserOutput( name );
 	}
 	
 	public String
@@ -102,7 +102,7 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 			 ballColourValues[ i ] = getScaledValue( i, 1.0d );
 		}
 		
-		valueOutput.updateAttributeValues( ballColourValues, balls );
+		valueOutput.updateOutput( ballColourValues, balls );
 	}
 	
 	private double
@@ -137,7 +137,7 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 	}
 	
 	AnalyserOutput[]
-	getAnalyserOutputs()
+	getOutputs()
 	{
 		AnalyserOutput[]	outputs = new AnalyserOutput[ 1 ];
 		outputs[ 0 ]				= valueOutput;

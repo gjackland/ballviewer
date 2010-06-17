@@ -244,7 +244,7 @@ public class CrystalAnalyser extends BallAnalyser
 	}
 	
 	AnalyserOutput[]
-	getAnalyserOutputs()
+	getOutputs()
 	{
 		return null;
 	}

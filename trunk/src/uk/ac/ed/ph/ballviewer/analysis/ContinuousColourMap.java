@@ -2,10 +2,10 @@ package uk.ac.ed.ph.ballviewer.analysis;
 
 import java.awt.Color;
 
-class ContinuousColorMap extends ContinuousOutputMap
+class ContinuousColourMap extends ContinuousOutputMap
 {
-	private Color	minColour;
-	private Color	maxColour;
+	private Color	minColour = Color.blue;
+	private Color	maxColour = Color.yellow;
 	
 	Object[]
 	mapValues( double[]	inValues )

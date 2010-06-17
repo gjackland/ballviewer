@@ -12,8 +12,15 @@ class DiscreteAnalyserOuput extends AnalyserOutput< DiscreteOutputMap >
 		new Hashtable< Class, Class< DiscreteOutputMap > >();
 
 
+	DiscreteAnalyserOuput(
+		final String		name
+	)
+	{
+		super( name );
+	}
+
 	void
-	updateAttributeValues(
+	updateOutput(
 		final int[]		newValues,
 		final Object[]	objArray
 	)

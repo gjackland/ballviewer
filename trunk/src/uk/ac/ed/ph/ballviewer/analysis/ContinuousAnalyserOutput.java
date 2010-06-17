@@ -5,15 +5,31 @@ import java.util.Set;
 
 class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 {
-	private static final	Hashtable< Class, Class< ContinuousOutputMap > >	defaultMaps =
-		new Hashtable< Class, Class< ContinuousOutputMap > >();
+	private static final	Hashtable< Class, Class< ? extends ContinuousOutputMap > >	defaultMaps =
+		new Hashtable< Class, Class< ? extends ContinuousOutputMap > >();
 		
-	private	final			Hashtable< Class, Class< ContinuousOutputMap > >	customMaps =
-		new Hashtable< Class, Class< ContinuousOutputMap > >();
+	static
+	{
+		// Define all the default maps here
+		defaultMaps.put( java.awt.Color.class, ContinuousColourMap.class );
+	}
+		
+	// Users can create custom continuous output maps and add them in which case they will be stored here.
+	// These take priority over any default maps that may exist.		
+	private	final			Hashtable< Class, Class< ? extends ContinuousOutputMap > >	customMaps =
+		new Hashtable< Class, Class< ? extends ContinuousOutputMap > >();
 
+
+
+	ContinuousAnalyserOutput(
+		final String 		name
+	)
+	{
+		super( name );
+	}
 
 	void
-	updateAttributeValues(
+	updateOutput(
 		final double[]	newValues,
 		final Object[]	objArray
 	)
@@ -33,12 +49,12 @@ class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 		return supportedTypes;
 	}
 	
-	protected Class< ContinuousOutputMap >
+	protected Class< ? extends ContinuousOutputMap >
 	getOutputMapForClass(
 		final Class sysObjClass
 	)
 	{
-		Class< ContinuousOutputMap > map = customMaps.get( sysObjClass );
+		Class< ? extends ContinuousOutputMap > map = customMaps.get( sysObjClass );
 		
 		// If we couldn't find it in the custom maps then use a default one
 		if( map == null )

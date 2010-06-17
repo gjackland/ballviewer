@@ -1,9 +1,14 @@
 package uk.ac.ed.ph.ballviewer.analysis;
 
-import java.lang.Class;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.HashSet;
+import java.util.Set;
+
 import java.io.*;
+
+import java.lang.Class;
 import java.lang.ClassLoader;
 
 import uk.ac.ed.ph.ballviewer.StaticSystem;
@@ -54,6 +59,11 @@ public class AnalysisManager implements AnalyserChangeListener
 	
 	// A list of all the current ball analysers
 	private final		ArrayList< BallAnalyser >	ballAnalysers	= new ArrayList< BallAnalyser >();
+	
+	// A hashtable that maps from a class type to a list of all the analyser outputs that can be attached
+	// to a system object attribute of that type
+	private final		Hashtable< Class, HashSet< AnalyserOutput > >	outputTypeMap =
+		new Hashtable< Class, HashSet< AnalyserOutput > >();
 	
 	public AnalysisManager( BallViewerFramework framework )
 	{
@@ -110,6 +120,8 @@ public class AnalysisManager implements AnalyserChangeListener
 			System.out.println( "Adding ball analyser: " + newAnalyser.getName() );
 			ballAnalysers.add( ( BallAnalyser )newAnalyser );
 			newAnalyser.addAnalyserChangeListener( this );
+			
+			attachBallAnalyser( ( BallAnalyser )newAnalyser );
 		}
 	}
 	
@@ -129,6 +141,15 @@ public class AnalysisManager implements AnalyserChangeListener
 		return true;
 	}
 	
+	public Set< AnalyserOutput >
+	getSupportedOutputs(
+		final SysObjAttribute		attribute
+	)
+	{
+		final HashSet< AnalyserOutput > outputs = outputTypeMap.get( attribute.getAttributeClassType() );
+		return outputs != null ? outputs : new HashSet< AnalyserOutput >();
+	}
+	
 	public void
 	update(
 		final StaticSystem		system
@@ -142,6 +163,7 @@ public class AnalysisManager implements AnalyserChangeListener
 		final StaticSystem		system
 	)
 	{
+		System.out.println( "Updating output" );
 		for( BallAnalyser bAnalyser: ballAnalysers )
 		{
 			bAnalyser.updateAttributes( system );
@@ -158,12 +180,41 @@ public class AnalysisManager implements AnalyserChangeListener
 		}
 	}
 	
+	
+	// TODO: Change this method name to registerBallAnalyser
 	public void
-	addBallAnalyser(
+	attachBallAnalyser(
 		final		BallAnalyser		newAnalyser
 	)
 	{
-		System.out.println( "Adding ball analyser: " + newAnalyser.getName() );
+		System.out.println( "Attaching ball analyser: " + newAnalyser.getName() );
 		ballAnalysers.add( newAnalyser );
+		
+		AnalyserOutput[] outputs	= newAnalyser.getOutputs();
+		if( outputs != null )
+		{
+			for( AnalyserOutput output: newAnalyser.getOutputs() )
+			{
+				updateOutputTypeMap( output );
+			}
+		}
+	}
+	
+	private void
+	updateOutputTypeMap(
+		final AnalyserOutput	output
+	)
+	{
+		Set< Class > supportTypeSet = output.getSupportedAttributeTypes();
+		for( Class supportedType: supportTypeSet )
+		{
+			HashSet< AnalyserOutput > outputList = outputTypeMap.get( supportedType );
+			if( outputList == null )
+			{
+				outputList = new HashSet< AnalyserOutput >();
+				outputTypeMap.put( supportedType, outputList );
+			}
+			outputList.add( output );
+		}
 	}
 }

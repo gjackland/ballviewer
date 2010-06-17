@@ -4,14 +4,25 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Set;
 
-abstract class AnalyserOutput< T extends AnalyserOutputMap >
+public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 {
-	// A list to store all the system object attributes that are attached to this analyser output
-	protected final ArrayList< SysObjAttribute >		attachedAttributes =
+	// These two lists remain in sync with one another.  For each attached attribute
+	// exists a corresponding output map that maps the analyser output onto the class type
+	// of the attribute
+	protected final ArrayList< SysObjAttribute >	attachedAttributes =
 		new ArrayList< SysObjAttribute >();
-		
 	protected final ArrayList< T >					outputMaps = 
 		new ArrayList< T >();
+	
+	private final String							name;
+	
+	
+	AnalyserOutput(
+		final String	name
+	)
+	{
+		this.name	= name;
+	}
 	
 	/**
 	 *
@@ -19,12 +30,12 @@ abstract class AnalyserOutput< T extends AnalyserOutputMap >
 	 *
 	 *
 	 */
-	final boolean
+	public final boolean
 	attachAttribute(
 		final SysObjAttribute	attribute
 	)
 	{
-		final Class< T > outputMapClass = getOutputMapForClass( attribute.getSysObjClass() );
+		final Class< ? extends T > outputMapClass = getOutputMapForClass( attribute.getAttributeClassType() );
 		
 		// Check that we support this attribute type and that it isn't already attached
 		if( outputMapClass != null &&
@@ -37,6 +48,7 @@ abstract class AnalyserOutput< T extends AnalyserOutputMap >
 				
 				outputMaps.add( outputMap );
 				attachedAttributes.add( attribute );
+				System.out.println( "Attached " + this + " to " + attribute );
 			}
 			catch( Exception e )
 			{
@@ -57,7 +69,7 @@ abstract class AnalyserOutput< T extends AnalyserOutputMap >
 	 *
 	 *
 	 */
-	final boolean
+	public final boolean
 	detachAttribute(
 		final SysObjAttribute	attribute
 	)
@@ -67,11 +79,26 @@ abstract class AnalyserOutput< T extends AnalyserOutputMap >
 		return attachedAttributes.remove( attributeIndex ) != null;
 	}
 	
+	/**
+	 *	Get a set of all the classes that this output can be mapped to.
+	 *
+	 *
+	 */
 	abstract Set< Class >
 	getSupportedAttributeTypes();
 	
-	protected abstract Class< T >
+	protected abstract Class< ? extends T >
 	getOutputMapForClass(
 		final Class sysObjClass
 	);
+	
+	/**
+	 *	toString gives the name of the output analyser.
+	 *
+	 */
+	public String
+	toString()
+	{
+		return name;
+	}
 }
