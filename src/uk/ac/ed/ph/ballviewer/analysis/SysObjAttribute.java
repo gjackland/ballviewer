@@ -11,48 +11,44 @@ import java.lang.IllegalArgumentException;
 public class SysObjAttribute
 {
 	private final Method		setter;
-	private final Class			sysObjClass;
+	private final Class			attributeClassType;
+	private final String		name;
 	
 	public SysObjAttribute(
-		final Class		sysObjClass,
-		final Method	setter
+		final Class			attributeClassType,
+		final Method		setter,
+		final String		name
 	) throws IllegalArgumentException
 	{
 		// Check that we haven't been given null references,
-		// that the setter is indeed from the class that we've been given
 		// and that the setter has only one parameter
-		try
+		if( attributeClassType == null || setter == null ||
+			setter.getParameterTypes().length != 1 )
 		{
-			if( sysObjClass == null || setter == null ||
-				sysObjClass.getMethod( setter.getName(), setter.getParameterTypes() ) == null ||
-				setter.getParameterTypes().length != 0 )
-			{
-				throw new IllegalArgumentException( "Can't instantiate SysObjAttribute, invalid parameters." );
-			}
-		} catch( NoSuchMethodException e )
-		{
-			throw new IllegalArgumentException( "Failed to instantiate SysObjAttribute, method passed in does not exist" );
+			throw new IllegalArgumentException( "Can't instantiate SysObjAttribute, invalid parameters." );
 		}
+
 		
-		this.sysObjClass	= sysObjClass;
-		this.setter			= setter;
+		this.attributeClassType	= attributeClassType;
+		this.setter				= setter;
+		this.name				= name;
 	}
 	
 	public String
 	getName()
 	{
-		return null;
+		return name;
 	}
 	
 	/**
-	 *	Get the class type of the system object that this attribute describes.
+	 *	Get the class type of the system object attribute.
 	 *
 	 *
 	 */
-	public Class
-	getSysObjClass()
+	Class
+	getAttributeClassType()
 	{
-		return sysObjClass;
+		return attributeClassType;
 	}
 	
 	/*
@@ -85,5 +81,11 @@ public class SysObjAttribute
 			}
 		}
 		return true;
+	}
+	
+	public String
+	toString()
+	{
+		return name;
 	}
 }

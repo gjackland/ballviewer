@@ -85,10 +85,13 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 															yVctr 			= new Vector3Panel( "Y", 4 ),
 															zVctr 			= new Vector3Panel( "Z", 4 ),
 															pVctr 			= new Vector3Panel( "P", 3 );
-															
+
+
+	// Sidebar with auxilary information
+	private final			JPanel							pSidebar		= new JPanel();
 	
 	// System objects side panel											
-	private final			SystemObjectsPanel				sysObjPanel;
+	private final			SystemObjectsPanel				pSystemObjects;
 	
 	
 	public BallViewer()
@@ -141,7 +144,11 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 			public void windowClosing( WindowEvent e ) { e.getWindow().dispose(); System.exit(0); }
 		});
 
-		sysObjPanel = new SystemObjectsPanel( framework );
+		pSystemObjects = new SystemObjectsPanel( framework );
+		
+		// Set up the sidebar
+		pSidebar.setLayout( new BoxLayout( pSidebar, BoxLayout.Y_AXIS ) );
+		pSidebar.add( pSystemObjects );
 
 		// set up graph details
 		xmin=xmn; xmax=xmx; ymin=ymn; ymax=ymx; //graph corners
@@ -232,7 +239,7 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 		// put the infobar, canvas and control panel together
 		this.add( info,BorderLayout.NORTH );
 		this.add( canv,BorderLayout.CENTER );
-		this.add( new JPanel( new GridLayout( 1, 0 ) ), BorderLayout.EAST );
+		this.add( pSidebar, BorderLayout.EAST );
 		this.add( control,BorderLayout.SOUTH );
 		this.pack();    // this fits the frame around it all(neat)
 		
@@ -279,6 +286,9 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 		cells = framework.getSystem().getCellLattice();
 		// Set the camera position to the centre of the system
 		this.setCameraPosition( framework.getSystem().getCentre() );
+		
+		// Update the system objects panel
+		pSystemObjects.update();
 		
 		return true;
 	}
