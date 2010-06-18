@@ -195,6 +195,7 @@ public class AnalysisManager implements AnalyserChangeListener
 		{
 			for( AnalyserOutput output: newAnalyser.getOutputs() )
 			{
+				output.setEventDispatcher( framework.getEventDispatcher() );
 				updateOutputTypeMap( output );
 			}
 		}

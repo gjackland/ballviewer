@@ -1,7 +1,14 @@
 package uk.ac.ed.ph.ballviewer.analysis;
 
-abstract class DiscreteOutputMap extends AnalyserOutputMap
+abstract class DiscreteOutputMap< T > extends AnalyserOutputMap< DiscreteAnalyserOutput >
 {
-	abstract Object[]
+	DiscreteOutputMap(
+		final DiscreteAnalyserOutput		analyserOutput
+	)
+	{
+		super( analyserOutput );
+	}
+	
+	abstract T[]
 	mapValues( final int[] inValues );
 }

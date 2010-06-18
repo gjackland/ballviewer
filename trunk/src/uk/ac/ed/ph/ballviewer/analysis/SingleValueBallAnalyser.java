@@ -2,10 +2,13 @@ package uk.ac.ed.ph.ballviewer.analysis;
 
 import java.awt.Color;
 
-import uk.ac.ed.ph.ballviewer.StaticSystem;
 import uk.ac.ed.ph.ballviewer.Ball;
-import uk.ac.ed.ph.ballviewer.util.Options;
+import uk.ac.ed.ph.ballviewer.StaticSystem;
 
+import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
+import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
+
+import uk.ac.ed.ph.ballviewer.util.Options;
 
 public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalyserOptions >
 {

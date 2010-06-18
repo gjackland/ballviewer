@@ -7,6 +7,13 @@ class ContinuousColourMap extends ContinuousOutputMap
 	private Color	minColour = Color.blue;
 	private Color	maxColour = Color.yellow;
 	
+	ContinuousColourMap(
+		final ContinuousAnalyserOutput		analyserOutput
+	)
+	{
+		super( analyserOutput );
+	}
+	
 	Object[]
 	mapValues( double[]	inValues )
 	{

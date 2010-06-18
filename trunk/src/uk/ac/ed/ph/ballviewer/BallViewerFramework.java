@@ -4,11 +4,14 @@ import uk.ac.ed.ph.ballviewer.analysis.AnalysisManager;
 
 import uk.ac.ed.ph.ballviewer.io.ReaderManager;
 
+import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
+
 public class BallViewerFramework
 {
 	private 				StaticSystem				system;
 	private final			AnalysisManager				analyser				= new AnalysisManager( this );
 	private final			ReaderManager				reader					= new ReaderManager();
+	private final			EventDispatcher				eventDispatcher			= new EventDispatcher();
 	
 	BallViewerFramework()
 	{
@@ -43,4 +46,9 @@ public class BallViewerFramework
 		return reader;
 	}
 	
+	public EventDispatcher
+	getEventDispatcher()
+	{
+		return eventDispatcher;
+	}
 }
