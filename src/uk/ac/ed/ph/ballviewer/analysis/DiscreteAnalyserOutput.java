@@ -3,20 +3,60 @@ package uk.ac.ed.ph.ballviewer.analysis;
 import java.util.Hashtable;
 import java.util.Set;
 
-class DiscreteAnalyserOuput extends AnalyserOutput< DiscreteOutputMap >
+import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
+import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
+
+class DiscreteAnalyserOutput extends AnalyserOutput< DiscreteOutputMap >
 {
-	private static final	Hashtable< Class, Class< DiscreteOutputMap > >	defaultMaps =
-		new Hashtable< Class, Class< DiscreteOutputMap > >();
+	private static final	Hashtable< Class, Class< ? extends DiscreteOutputMap > >	defaultMaps =
+		new Hashtable< Class, Class< ? extends DiscreteOutputMap > >();
+		
+	static
+	{
+		// Define all the default maps here
+		registerDefaultMap( DiscreteColourMap.class, java.awt.Color.class );
+	}
+	
+	private static boolean
+	registerDefaultMap(
+		final Class< ? extends DiscreteOutputMap >		mapperClass,
+		final Class										outputClass
+	)
+	{
+		// Check that the class has the required constructor i.e. one parameter of type ContinuousAnalyserOutput
+		try
+		{
+			// This will throw exception if it can't find the method
+			mapperClass.getDeclaredConstructor( DiscreteAnalyserOutput.class );
+			defaultMaps.put( outputClass, mapperClass );
+			return true;
+		}
+		catch( NoSuchMethodException e )
+		{
+			return false;
+		}
+	}
 		
 	private	final			Hashtable< Class, Class< DiscreteOutputMap > >	customMaps =
 		new Hashtable< Class, Class< DiscreteOutputMap > >();
+		
+	private final 			int[]	possibleValues;
 
 
-	DiscreteAnalyserOuput(
-		final String		name
+	DiscreteAnalyserOutput(
+		final String			name,
+		final int[]				possibleValues
 	)
 	{
 		super( name );
+		
+		this.possibleValues	= possibleValues;
+	}
+	
+	int[]
+	getPossibleValues()
+	{
+		return possibleValues;
 	}
 
 	void
@@ -40,12 +80,12 @@ class DiscreteAnalyserOuput extends AnalyserOutput< DiscreteOutputMap >
 		return supportedTypes;
 	}
 	
-	protected Class< DiscreteOutputMap >
+	protected Class< ? extends DiscreteOutputMap >
 	getOutputMapForClass(
 		final Class sysObjClass
 	)
 	{
-		Class< DiscreteOutputMap > map = customMaps.get( sysObjClass );
+		Class< ? extends DiscreteOutputMap > map = customMaps.get( sysObjClass );
 		
 		// If we couldn't find it in the custom maps then use a default one
 		if( map == null )

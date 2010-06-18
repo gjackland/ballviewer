@@ -2,9 +2,11 @@ package uk.ac.ed.ph.ballviewer.analysis;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.ph.ballviewer.StaticSystem;
+
 import uk.ac.ed.ph.ballviewer.util.Options;
 import uk.ac.ed.ph.ballviewer.util.Optionable;
-import uk.ac.ed.ph.ballviewer.StaticSystem;
+
 
 public abstract class Analyser< T extends Options > implements Optionable< T >
 {

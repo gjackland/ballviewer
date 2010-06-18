@@ -8,7 +8,7 @@ import java.lang.IllegalArgumentException;
  *	This class can be used to set the attribute of a given array of the system
  *	object instances.
  */
-public class SysObjAttribute
+public final class SysObjAttribute
 {
 	private final Method		setter;
 	private final Class			attributeClassType;
@@ -40,6 +40,12 @@ public class SysObjAttribute
 		return name;
 	}
 	
+	public String
+	toString()
+	{
+		return getName();
+	}
+	
 	/**
 	 *	Get the class type of the system object attribute.
 	 *
@@ -63,8 +69,9 @@ public class SysObjAttribute
 	{
 		if( values.length != objArray.length ||
 			values.length == 0 ||
-			!setter.getParameterTypes()[ 0 ].equals( values[ 0 ].getClass() ) )
+			!isInputCompatible( values[ 0 ].getClass() ) )
 		{
+			System.out.println( "Not compatible: " + setter.getParameterTypes()[ 0 ] + " and " + values[ 0 ].getClass() );
 			return false;
 		}
 		for( int i = 0; i < objArray.length; ++i )
@@ -83,9 +90,17 @@ public class SysObjAttribute
 		return true;
 	}
 	
-	public String
-	toString()
+	private boolean
+	isInputCompatible( final Class inputClass )
 	{
-		return name;
+		final Class paramClass = setter.getParameterTypes()[ 0 ];
+		if( paramClass.isPrimitive() )
+		{
+			return paramClass.getSimpleName().equalsIgnoreCase( inputClass.getSimpleName() );
+		}
+		else
+		{
+			return paramClass.equals( inputClass );
+		}
 	}
 }

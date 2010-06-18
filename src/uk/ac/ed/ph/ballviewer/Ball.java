@@ -19,6 +19,8 @@ public class Ball implements Positionable
 	double				diameter;
 	private Color 		colour;
 	
+	private double		diameterOffset;		// Tmp
+	
 	Ball ball;   // this is for drawing plane arrows; there shouldn't be more than 1 arrow per Ball
 	
 	public Ball() {
@@ -53,6 +55,15 @@ public class Ball implements Positionable
 		this.colour		= col; 
 	}
 	
+	// Copy constructor
+	public Ball( final Ball bToCopy )
+	{
+		pos				= new Vector3( bToCopy.pos );
+		colour			= bToCopy.colour;
+		diameter		= bToCopy.diameter;
+		diameterOffset	= bToCopy.diameterOffset;
+	}
+	
 	public void resetBall(Vector3 posin, double d, Color col) {
 		this.pos 		= posin;
 		this.diameter	= d;
@@ -75,6 +86,18 @@ public class Ball implements Positionable
 	getColour()
 	{
 		return colour;
+	}
+	
+	public void
+	setDiameterOffset( final double offset )
+	{
+		diameterOffset = offset;
+	}
+	
+	public double
+	getDiameterOffset()
+	{
+		return diameterOffset;
 	}
 
 	static Color randomColour()

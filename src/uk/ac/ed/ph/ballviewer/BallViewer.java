@@ -4,10 +4,15 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.awt.image.*;
+
 import java.text.*;
+
 import javax.swing.*;
+
 import java.util.Date;
+
 import java.io.File;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -16,13 +21,18 @@ import uk.ac.ed.ph.ballviewer.gui.*;
 import uk.ac.ed.ph.ballviewer.io.*;
 import uk.ac.ed.ph.ballviewer.math.*;
 
+import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
+import uk.ac.ed.ph.ballviewer.event.AttributeAttachListener;
+import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
+
 /** 
  * This is a viewer for 3d configurations of objects, especially balls. <br>
  * Gets input from mouse dragging and from input components
  * (buttons, textfields, checkboxes) in order to adjust the display.
  */
-public class BallViewer extends JFrame implements ActionListener, ItemListener, TextListener, 
-							MouseListener, MouseMotionListener, MouseWheelListener
+public class BallViewer extends JFrame implements
+ActionListener, ItemListener, TextListener, MouseListener, MouseMotionListener, MouseWheelListener,
+AttributeAttachListener
 {
 	private static final	String							title						= "Ball Viewer";
 
@@ -123,6 +133,9 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 		// set up the frame //
 		super( title );
 		framework		= new BallViewerFramework();
+		
+		// Register ourselves to receive message from the dispatcher
+		framework.getEventDispatcher().listen( AttributeAttachEvent.class, this );
 		
 		// Allow menus to overlap over drawing canvas
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
@@ -413,6 +426,25 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 	   drawBalls();	
 	}
 	
+	// Attribute attach listener interface //
+	public void
+	attributeAttached(
+		final AnalyserOutput	output,
+		final SysObjAttribute	attribute
+	)
+	{
+		drawBalls();
+	}
+	
+	public void
+	attributeDetached(
+		final AnalyserOutput	output,
+		final SysObjAttribute	attribute
+	)
+	{
+		drawBalls();
+	}
+	
 	// End of input interfaces //
 	
 	boolean sliceOn = false, ffadeOn = false, bfadeOn = false;
@@ -554,9 +586,12 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 //			}
 			
 			Ball[] balls = framework.getSystem().p;
+			// TODO: Nasty nastyness here shouldn't be creating copies!
+			// But probably best waiting till I change to renderer to fix this
 			for( Ball b : balls )
 			{
-				final Ball bCopy = new Ball( transform.appliedTo( b.pos ), b.getColour() );
+				final Ball bCopy	= new Ball( transform.appliedTo( b.pos ), b.getColour() );
+				bCopy.setDiameterOffset( b.getDiameterOffset() );
 				tr.addNode( bCopy, bCopy.pos.z );
 			}
 			
@@ -581,7 +616,10 @@ public class BallViewer extends JFrame implements ActionListener, ItemListener, 
 					}
 					else zsc = 1.0;
 				
-					double d=b.diameter*zsc;
+					double d=( b.diameter + b.getDiameterOffset() ) * zsc;
+					
+					//System.out.println( "Diameter: " + b.diameter + " offset: " + b.getDiameterOffset() );
+					
 					double r=d/2;
 					double cx = b.pos.x*zsc*xsc;
 					double cy = b.pos.y*zsc*ysc;
