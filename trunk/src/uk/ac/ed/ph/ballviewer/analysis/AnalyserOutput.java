@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Set;
 
+import uk.ac.ed.ph.ballviewer.BallViewerFramework;
+
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
 import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
 
@@ -21,14 +23,21 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 		new ArrayList< T >();
 	
 	private final	String							name;
-	private			EventDispatcher					events;	// Need this so we can send and receive message
+	private final	BallAnalyser					parentAnalyser;		// The analyser this output belong to
 	
 	AnalyserOutput(
-		final String			name
+		final String			name,
+		final BallAnalyser		parentAnalyser
 	)
 	{
-		this.name		= name;
-		this.events		= events;
+		this.name			= name;
+		this.parentAnalyser	= parentAnalyser;
+	}
+	
+	public final boolean
+	isAttached( final SysObjAttribute attribute )
+	{
+		return attachedAttributes.contains( attribute );
 	}
 	
 	/**
@@ -57,11 +66,8 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 				outputMaps.add( outputMap );
 				attachedAttributes.add( attribute );
 
-				if( events != null )
-				{
-					// Send a message to indicate that an attribute has been attached
-					events.notify( new AttributeAttachEvent( true, this, attribute ) );
-				}
+				// Send a message to indicate that an attribute has been attached
+				BallViewerFramework.eventDispatcher.notify( new AttributeAttachEvent( true, this, attribute ) );
 				
 				System.out.println( "Attached " + this + " to " + attribute );
 			}
@@ -95,12 +101,9 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 			// Remove the output map and the attribute
 			outputMaps.remove( attributeIndex );
 			attachedAttributes.remove( attributeIndex );
-			
-			if( events != null )
-			{
-				// Send a message indicating that the detach event has occured
-				events.notify( new AttributeAttachEvent( false, this, attribute ) );
-			}
+
+			// Send a message indicating that the detach event has occured
+			BallViewerFramework.eventDispatcher.notify( new AttributeAttachEvent( false, this, attribute ) );
 			
 			return true;
 		}
@@ -124,6 +127,12 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 		return  name;
 	}
 	
+	public BallAnalyser
+	getParentAnalyser()
+	{
+		return parentAnalyser;
+	}
+	
 	/**
 	 *	Get a set of all the classes that this output can be mapped to.
 	 *
@@ -131,19 +140,6 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 	 */
 	abstract Set< Class >
 	getSupportedAttributeTypes();
-	
-	/**
-	 *	Set the event dispatcher, used to send attach events.
-	 *
-	 *	This is typically set by the AnalysisManager when this output is added.
-	 */
-	final void
-	setEventDispatcher(
-		final EventDispatcher	events
-	)
-	{
-		this.events	= events;
-	}
 	
 	protected abstract Class< ? extends T >
 	getOutputMapForClass(

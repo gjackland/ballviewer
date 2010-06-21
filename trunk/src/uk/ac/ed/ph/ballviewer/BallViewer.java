@@ -135,7 +135,7 @@ AttributeAttachListener
 		framework		= new BallViewerFramework();
 		
 		// Register ourselves to receive message from the dispatcher
-		framework.getEventDispatcher().listen( AttributeAttachEvent.class, this );
+		BallViewerFramework.eventDispatcher.listen( AttributeAttachEvent.class, this );
 		
 		// Allow menus to overlap over drawing canvas
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );

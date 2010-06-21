@@ -10,7 +10,7 @@ import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
 
 import uk.ac.ed.ph.ballviewer.util.Options;
 
-public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalyserOptions >
+public class SingleValueBallAnalyser extends Analyser< SingleValueBallAnalyserOptions > implements BallAnalyser
 {
 	private final	String			name;
 	private final	double 			ballValues[];										// The 'intensity' values assigned for each ball
@@ -26,32 +26,22 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 		this.name			= name;
 		this.ballValues		= new double[ numBalls ];
 		options				= new SingleValueBallAnalyserOptions();
-		valueOutput			= new ContinuousAnalyserOutput( name );
+		valueOutput			= new ContinuousAnalyserOutput( name, this );
 	}
 	
+	public void
+	initialise(
+		final AnalysisManager	manager
+	)
+	{
+		manager.attachBallAnalyser( this );
+	}
+	
+	@Override
 	public String
 	getName()
 	{
 		return name;
-	}
-	
-	public void
-	analyseBalls( StaticSystem sys )
-	{
-		Ball[] balls	= sys.getBalls();
-		for( int i = 0; i < ballValues.length; ++i )
-		{
-			double scaledVal = 0;
-			if( options.useLogscale )
-			{
-				scaledVal = getScaledLogValue( i, 1.0d );
-			}
-			else
-			{
-				scaledVal = getScaledValue( i, 1.0d );
-			}
-			balls[ i ].setColour( getColour( scaledVal ) );
-		}
 	}
 	
 	private Color
@@ -91,6 +81,7 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 		}
 	}
 	
+	@Override
 	public void
 	updateAttributes(
 		StaticSystem sys
@@ -99,10 +90,17 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 		final Ball[] balls = sys.getBalls();
 		final double ballColourValues[] = new double[ balls.length ];
 		
-		
-		for( int i = 0; i < balls.length; ++i )
+		for( int i = 0; i < ballValues.length; ++i )
 		{
-			 ballColourValues[ i ] = getScaledValue( i, 1.0d );
+			double scaledVal = 0;
+			if( options.useLogscale )
+			{
+				 ballColourValues[ i ] = getScaledLogValue( i, 1.0d );
+			}
+			else
+			{
+				 ballColourValues[ i ] = getScaledValue( i, 1.0d );
+			}
 		}
 		
 		valueOutput.updateOutput( ballColourValues, balls );
@@ -139,11 +137,11 @@ public class SingleValueBallAnalyser extends BallAnalyser< SingleValueBallAnalys
 		return Math.log10( value ) * scale;
 	}
 	
-	AnalyserOutput[]
+	@Override
+	public AnalyserOutput[]
 	getOutputs()
 	{
-		AnalyserOutput[]	outputs = new AnalyserOutput[ 1 ];
-		outputs[ 0 ]				= valueOutput;
+		AnalyserOutput[]	outputs = { valueOutput };
 		
 		return outputs;
 	}

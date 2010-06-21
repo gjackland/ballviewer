@@ -20,8 +20,7 @@ public class AnalysisMenu extends JMenu
 		private final		JFrame				owner;
 		private final		AnalysisManager		analysisManager;	// The manager responsible for managing analysis operations
 		private final		Analyser			analyser;			// The analyser that this class represents the menu for
-		// Is the analyser currently enabled
-		private final		JCheckBoxMenuItem	miEnabled	= new JCheckBoxMenuItem( "Enabled" );
+
 		// Menu item to bring up analyser options if it has any
 		private final		JMenuItem			miOptions;
 		
@@ -50,9 +49,6 @@ public class AnalysisMenu extends JMenu
 			// Allow menus to overlap over lightweight JOGL canvas
 			JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 			
-			// Set up the enabled checkbox menu item
-			miEnabled.addActionListener( this );
-			this.add( miEnabled );
 			
 			// Set up the options menu item if necessary
 			if( analyser.getOptions() != null )
@@ -72,21 +68,11 @@ public class AnalysisMenu extends JMenu
 		{
 			// Find out which operation has been selected
 			Object evtSource = e.getSource();
-			if( evtSource == miEnabled )
-			{
-				analysisManager.applyAnalyser( analyser );
-			}
-			else if( evtSource == miOptions )
+			if( evtSource == miOptions )
 			{
 				AnalyserOptionsDialog dialog = new AnalyserOptionsDialog( owner, analyser );
 				dialog.setVisible( true );
 			}
-		}
-		
-		JMenuItem
-		getAnalyserEnabledItem()
-		{
-			return miEnabled;
 		}
 	}
 	
@@ -125,11 +111,10 @@ public class AnalysisMenu extends JMenu
 		
 		// Now fill up the menu with all the analysers from the manager
 		ButtonGroup bgBallAnalysers = new ButtonGroup();
-		for( Analyser analyser : analysisManager.getBallAnalysers() )
+		for( Analyser analyser : analysisManager.getAllAnalysers() )
 		{
 			final AnalyserMenu analyserMenu = new AnalyserMenu( owner, analysisManager, analyser );
 			mAnalysisBalls.add( analyserMenu );
-			bgBallAnalysers.add( analyserMenu.getAnalyserEnabledItem() );
 		}
 	}
 }
