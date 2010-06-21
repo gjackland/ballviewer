@@ -195,8 +195,9 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 	
 	// INTERFACES //////////////////////////////////////////////////////////
 	
+	@Override
 	public void
-	analyserStateChanged( Analyser source )
+	analyserStateChanged( final Analyser source )
 	{
 		final int indexOfAnalyser = ballAnalysers.indexOf( source );
 		if( indexOfAnalyser != -1 )
@@ -205,6 +206,7 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		}
 	}
 	
+	@Override
 	public void
 	attributeAttached(
 		final AnalyserOutput	output,
@@ -217,13 +219,16 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		output.getParentAnalyser().updateAttributes( framework.getSystem() );
 	}
 	
+	@Override
 	public void
 	attributeDetached(
 		final AnalyserOutput	output,
 		final SysObjAttribute	attribute
 	)
 	{
-		// Don't need to do anything
+		// Reset values back to defaults
+		// TODO: Not sure this is the right place to do this, but possibly
+		attribute.resetToDefault( framework.getSystem().getBalls() );
 	}
 	
 	

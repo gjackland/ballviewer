@@ -233,8 +233,8 @@ class SystemTree extends JTree implements AttributeAttachListener
     	// Cheat and create the system object attributes manually
     	try
     	{
-			ballAttributes.add( new SysObjAttribute( java.awt.Color.class, Ball.class.getMethod( "setColour", java.awt.Color.class ), "Colour" ) );
-			ballAttributes.add( new SysObjAttribute( Double.class, Ball.class.getMethod( "setDiameterOffset", double.class ), "Size" ) );
+			ballAttributes.add( new SysObjAttribute( java.awt.Color.class, Ball.class.getMethod( "setColour", java.awt.Color.class ), java.awt.Color.gray, "Colour" ) );
+			ballAttributes.add( new SysObjAttribute( Double.class, Ball.class.getMethod( "setDiameterOffset", double.class ), Ball.DEFAULT_DIAMETER, "Size" ) );
     	}
     	catch( Exception e )
     	{
