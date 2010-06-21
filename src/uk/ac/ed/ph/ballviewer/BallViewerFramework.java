@@ -6,12 +6,12 @@ import uk.ac.ed.ph.ballviewer.io.ReaderManager;
 
 import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
 
-public class BallViewerFramework
+public final class BallViewerFramework
 {
+	public static final 	EventDispatcher				eventDispatcher			= new EventDispatcher();
 	private 				StaticSystem				system;
 	private final			AnalysisManager				analyser				= new AnalysisManager( this );
 	private final			ReaderManager				reader					= new ReaderManager();
-	private final			EventDispatcher				eventDispatcher			= new EventDispatcher();
 	
 	BallViewerFramework()
 	{
@@ -25,6 +25,7 @@ public class BallViewerFramework
 	newSystem( StaticSystem newSystem )
 	{
 		this.system		= newSystem;
+		// TODO: Change this so it's on a message rather than direct call
 		analyser.reset();
 	}
 	
@@ -44,11 +45,5 @@ public class BallViewerFramework
 	getReaderManager()
 	{
 		return reader;
-	}
-	
-	public EventDispatcher
-	getEventDispatcher()
-	{
-		return eventDispatcher;
 	}
 }

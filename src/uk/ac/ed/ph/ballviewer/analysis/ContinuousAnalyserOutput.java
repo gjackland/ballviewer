@@ -49,10 +49,11 @@ class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 
 
 	ContinuousAnalyserOutput(
-		final String 			name
+		final String 			name,
+		final BallAnalyser		parentAnalyser
 	)
 	{
-		super( name );
+		super( name, parentAnalyser );
 	}
 
 	void

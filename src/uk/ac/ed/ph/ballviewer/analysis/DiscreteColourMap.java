@@ -68,6 +68,13 @@ public class DiscreteColourMap extends DiscreteOutputMap< Color >
 		}
 	}
 	
+	
+	/**
+	 *
+	 *	Return a colour evenly distributed between the range.
+	 *
+	 *
+	 */
 	private Color
 	getDistributedColour(
 		final int	value,
@@ -75,11 +82,10 @@ public class DiscreteColourMap extends DiscreteOutputMap< Color >
 		final int	range
 	)
 	{
-		return new Color(
-			( int )( ( ( double )( value - min ) ) / ( double )range * 255d ),
-			( int )( ( ( double )( value - min ) ) / ( double )range * 255d ),
-			( int )( ( ( double )( value - min ) ) / ( double )range * 255d ),
-			255
+		return Color.getHSBColor(
+			( ( ( float )( value - min ) ) / ( float )range ),
+			1.0f,
+			1.0f
 		);
 	}
 }

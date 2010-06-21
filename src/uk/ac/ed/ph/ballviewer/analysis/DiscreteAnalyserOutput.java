@@ -45,10 +45,11 @@ class DiscreteAnalyserOutput extends AnalyserOutput< DiscreteOutputMap >
 
 	DiscreteAnalyserOutput(
 		final String			name,
+		final BallAnalyser		parentAnalyser,
 		final int[]				possibleValues
 	)
 	{
-		super( name );
+		super( name, parentAnalyser );
 		
 		this.possibleValues	= possibleValues;
 	}

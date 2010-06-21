@@ -5,7 +5,7 @@ import java.awt.Color;
 class ContinuousColourMap extends ContinuousOutputMap
 {
 	private Color	minColour = Color.blue;
-	private Color	maxColour = Color.yellow;
+	private Color	maxColour = Color.red;
 	
 	ContinuousColourMap(
 		final ContinuousAnalyserOutput		analyserOutput
