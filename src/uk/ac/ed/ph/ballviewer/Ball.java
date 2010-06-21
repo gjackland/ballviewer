@@ -5,6 +5,8 @@ import java.awt.*;
 
 import uk.ac.ed.ph.ballviewer.math.*;
 
+import uk.ac.ed.ph.ballviewer.analysis.AttributeMethod;
+
 /** 
  * Represents a ball for 2d or 3d drawing. <p>
  * Ball does NOT extend Particle and has none of its functionality. 
@@ -12,7 +14,7 @@ import uk.ac.ed.ph.ballviewer.math.*;
  */
 public class Ball implements Positionable
 {
-	static final double	DEFAULT_DIAMETER = 50.0d;
+	public static final double	DEFAULT_DIAMETER = 50.0d;
 	static double		newDiameter = DEFAULT_DIAMETER;
 
 	Vector3				pos;
@@ -76,6 +78,9 @@ public class Ball implements Positionable
 		return ( Vector3 )pos.clone();
 	}
 	
+	@AttributeMethod(
+		name	= "Colour"
+	)
 	public void
 	setColour( Color newColour )
 	{

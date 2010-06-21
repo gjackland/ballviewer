@@ -10,20 +10,32 @@ import java.lang.IllegalArgumentException;
  */
 public final class SysObjAttribute
 {
+	public static SysObjAttribute[]
+	getAttributes( final Class		sysObjClass )
+	{
+		sysObjClass.getMethods();
+		
+		return null;
+	}
+	
 	private final Method		setter;
 	private final Class			attributeClassType;
 	private final String		name;
+	private final Object		defaultValue;
 	
 	public SysObjAttribute(
 		final Class			attributeClassType,
 		final Method		setter,
+		final Object		defaultValue,
 		final String		name
 	) throws IllegalArgumentException
 	{
+		final Class[] setterParamTypes = setter.getParameterTypes();
 		// Check that we haven't been given null references,
 		// and that the setter has only one parameter
 		if( attributeClassType == null || setter == null ||
-			setter.getParameterTypes().length != 1 )
+			setterParamTypes.length != 1 ||
+			setterParamTypes[ 0 ] == defaultValue.getClass() )
 		{
 			throw new IllegalArgumentException( "Can't instantiate SysObjAttribute, invalid parameters." );
 		}
@@ -31,6 +43,7 @@ public final class SysObjAttribute
 		
 		this.attributeClassType	= attributeClassType;
 		this.setter				= setter;
+		this.defaultValue		= defaultValue;
 		this.name				= name;
 	}
 	
@@ -40,6 +53,7 @@ public final class SysObjAttribute
 		return name;
 	}
 	
+	@Override
 	public String
 	toString()
 	{
@@ -88,6 +102,23 @@ public final class SysObjAttribute
 			}
 		}
 		return true;
+	}
+	
+	void
+	resetToDefault( final Object[] objArray )
+	{
+		for( Object obj : objArray )
+		{
+			try
+			{
+				setter.invoke( obj, defaultValue );
+			}
+			catch( Exception e )
+			{
+				System.out.println( "Failed to set values to default for attribute " + getName() );
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private boolean
