@@ -163,7 +163,7 @@ class AnalysisTree extends JTree
 		super();
 		
 		this.setModel( model );
-		this.setEditable( true );
+		this.setEditable( false );
 		this.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
 		
 		for( Analyser analyser : analysisManager.getAllAnalysers() )

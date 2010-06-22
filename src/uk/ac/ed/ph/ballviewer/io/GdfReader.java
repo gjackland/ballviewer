@@ -16,8 +16,9 @@ class GdfReader implements InputReader
 		return ( new String[]{ "gdf" } );
 	}
 	
-	public StaticSystem
-	getStaticSystem(
+	@Override
+	public ExperimentRecord
+	getExperimentRecord(
 		final	File								inputFile,
 		final	Collection< Analyser >	analysers
 	)
@@ -48,7 +49,11 @@ class GdfReader implements InputReader
 		
 		sys.shouldAnalyse=true;
 		
-		return sys;
+		// TODO: Deal with system properties somehow
+		final ExperimentRecord record = new ExperimentRecord( null );
+		record.addSystemSample( sys );
+		
+		return record;
 	}
 	
 }

@@ -5,10 +5,11 @@ import java.io.File;
 import java.util.Date;
 import java.util.Collection;
 
-import uk.ac.ed.ph.ballviewer.StaticSystem;
+import uk.ac.ed.ph.ballviewer.ExperimentRecord;
+
 import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 
-public class ReaderManager
+public final class ReaderManager
 {
 	private static final Hashtable< String, InputReader >	readerRegistry	=
 		new Hashtable< String, InputReader >();
@@ -50,7 +51,7 @@ public class ReaderManager
 		}
 	}
 	
-	public StaticSystem
+	public ExperimentRecord
 	getStaticSystem(
 		final String					inputFilename,
 		final Collection< Analyser >	analysers
@@ -76,9 +77,9 @@ public class ReaderManager
 	 *      <li> .xyz files are ascii free format .txt
 	 * </ul>
 	 */
-	public StaticSystem
+	public ExperimentRecord
 	getStaticSystem(
-		final File								inputFile,
+		final File						inputFile,
 		final Collection< Analyser >	analysers
 	) throws IllegalArgumentException
 	{
@@ -91,10 +92,10 @@ public class ReaderManager
 			final InputReader r = readerRegistry.get( getFileExtensions( inputFile ) );
 			if( r != null )
 			{
-				StaticSystem sys = null;
+				ExperimentRecord expRec = null;
 				try
 				{
-					sys = r.getStaticSystem( inputFile, analysers );
+					expRec = r.getExperimentRecord( inputFile, analysers );
 				}
 				catch( Exception e )
 				{
@@ -104,8 +105,7 @@ public class ReaderManager
 				
 				System.out.println( "Balls all read: " + new Date() );
 				
-				sys.initialise();
-				return sys;
+				return expRec;
 			}
 			else
 			{

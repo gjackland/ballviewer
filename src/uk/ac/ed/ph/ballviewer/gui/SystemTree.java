@@ -38,14 +38,17 @@ import uk.ac.ed.ph.ballviewer.event.AttributeAttachListener;
 
 class SystemTree extends JTree implements AttributeAttachListener
 {
-	class AttributeHandler implements ActionListener, AttributeAttachListener
+	class AttributeHandler implements ActionListener
 	{
 		private final 	AnalysisManager			analysisManager;
 		private final 	SysObjAttribute			attribute;
 		private final 	JPopupMenu				attributePopup;
+		// Button group to make sure only one output is active at a time
+		private	final	ButtonGroup				bgMenuItems	= new ButtonGroup();
 		private final 	HashMap< JCheckBoxMenuItem, AnalyserOutput >	menuItemMap =
 			new HashMap< JCheckBoxMenuItem, AnalyserOutput >();
 		private			AnalyserOutput			currentOutput;		// The output the attribute is currently attached to
+		
 
 		AttributeHandler(
 			final AnalysisManager		analysisManager,
@@ -54,9 +57,6 @@ class SystemTree extends JTree implements AttributeAttachListener
 		{
 			this.analysisManager	= analysisManager;
 			this.attribute			= attribute;
-									
-			// Register ourselves to receive attribute attach messages
-			BallViewerFramework.eventDispatcher.listen( AttributeAttachEvent.class, this );
 			
 			attributePopup			= new JPopupMenu( "Attach Analyser Output" );
 			
@@ -67,14 +67,13 @@ class SystemTree extends JTree implements AttributeAttachListener
 		private void
 		generatePopupMenu()
 		{
-			final ButtonGroup group = new ButtonGroup();
 			for( AnalyserOutput output : analysisManager.getSupportedOutputs( attribute ) )
 			{
 				final JCheckBoxMenuItem outputItem = new JCheckBoxMenuItem( output.toString() );
 				outputItem.addActionListener( this );
 				attributePopup.add( outputItem );
 				menuItemMap.put( outputItem, output );
-				group.add( outputItem );
+				bgMenuItems.add( outputItem );
 			}
 			if( attributePopup.getComponentCount() == 0 )
 			{
@@ -87,19 +86,26 @@ class SystemTree extends JTree implements AttributeAttachListener
 		public void
 		actionPerformed( ActionEvent evt )
 		{
-			final AnalyserOutput output = menuItemMap.get( evt.getSource() );
+			final Object			source = evt.getSource();
+			final AnalyserOutput 	output = menuItemMap.get( source );
 			if( output != null )
 			{
 				// Detach the attribute from the current output if attached
 				if( currentOutput != null )
 				{
 					currentOutput.detachAttribute( attribute );
-					currentOutput	= null;
 				}
-				else
+				
+				if( currentOutput != output )
 				{
 					output.attachAttribute( attribute );
 					currentOutput	= output;
+				}
+				else
+				{
+					// Disable the check as the attribute isn't attached to an output
+					bgMenuItems.clearSelection();
+					currentOutput = null;
 				}
 			}
 		}
@@ -112,46 +118,6 @@ class SystemTree extends JTree implements AttributeAttachListener
 		{
 			attributePopup.show( comp, ( int )point.getX(), ( int )point.getY() );
 		}
-		
-		// INTERFACES //////////////////////////////////////////////////
-		
-		public void
-		attributeAttached(
-			final AnalyserOutput	output,
-			final SysObjAttribute	attribute
-		)
-		{
-			if( attribute == this.attribute )
-			{
-				for( Map.Entry< JCheckBoxMenuItem, AnalyserOutput > entry : menuItemMap.entrySet() )
-				{
-					if( entry.getValue() == output )
-					{
-						entry.getKey().setState( true );
-					}		
-				}
-			}
-		}
-		
-		public void
-		attributeDetached(
-			final AnalyserOutput	output,
-			final SysObjAttribute	attribute
-		)
-		{
-			if( attribute == this.attribute )
-			{
-				for( Map.Entry< JCheckBoxMenuItem, AnalyserOutput > entry : menuItemMap.entrySet() )
-				{
-					if( entry.getValue() == output )
-					{
-						entry.getKey().setState( false );
-					}		
-				}
-			}
-		}
-		
-		// END INTERFACES //////////////////////////////////////////////
 	}
 	
 	private final AnalysisManager			analysisManager;
@@ -175,7 +141,7 @@ class SystemTree extends JTree implements AttributeAttachListener
 		BallViewerFramework.eventDispatcher.listen( AttributeAttachEvent.class, this );
 		
 		this.setModel( model );
-		this.setEditable( true );
+		this.setEditable( false );
 		this.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
 		
 		final MouseListener ml = new MouseAdapter()
@@ -229,20 +195,8 @@ class SystemTree extends JTree implements AttributeAttachListener
     private ArrayList< SysObjAttribute >
     getBallAttributes()
     {
-    	final ArrayList< SysObjAttribute > ballAttributes = new ArrayList< SysObjAttribute >();
     	// Cheat and create the system object attributes manually
-    	try
-    	{
-			ballAttributes.add( new SysObjAttribute( java.awt.Color.class, Ball.class.getMethod( "setColour", java.awt.Color.class ), java.awt.Color.gray, "Colour" ) );
-			ballAttributes.add( new SysObjAttribute( Double.class, Ball.class.getMethod( "setDiameterOffset", double.class ), Ball.DEFAULT_DIAMETER, "Size" ) );
-    	}
-    	catch( Exception e )
-    	{
-    		System.out.println( "Failed to get attribute setter method for ball " + e );
-    		e.printStackTrace();
-    	}
-		
-		return ballAttributes;
+    	return SysObjAttribute.getAttributes( Ball.class );
     }
     
     private void
