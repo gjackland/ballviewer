@@ -1,16 +1,20 @@
 package uk.ac.ed.ph.ballviewer.io;
 
-import java.io.*;
-import java.util.StringTokenizer;
 import java.awt.Color;
+
+import java.io.*;
+
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import uk.ac.ed.ph.ballviewer.*;
+
 import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 import uk.ac.ed.ph.ballviewer.analysis.BallAnalyser;
 import uk.ac.ed.ph.ballviewer.analysis.SingleValueBallAnalyser;
+
 import uk.ac.ed.ph.ballviewer.math.*;
 
 class MoldyReader implements InputReader
@@ -53,8 +57,9 @@ class MoldyReader implements InputReader
 		return ( new String[]{ "in", "out" } );
 	}
 	
-	public StaticSystem
-	getStaticSystem(
+	@Override
+	public ExperimentRecord
+	getExperimentRecord(
 		final	File								inputFile,
 		final	Collection< Analyser >				analysers
 	)
@@ -138,8 +143,10 @@ class MoldyReader implements InputReader
 		sys.determineDimensions( paramsFile == null );
 		sys.shouldAnalyse = true;
 		
+		final ExperimentRecord record = new ExperimentRecord( properties );
+		record.addSystemSample( sys );
 		
-		return sys;
+		return record;
 	}
 	
 	/*

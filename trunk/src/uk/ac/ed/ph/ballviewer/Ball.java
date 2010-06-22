@@ -5,6 +5,7 @@ import java.awt.*;
 
 import uk.ac.ed.ph.ballviewer.math.*;
 
+import uk.ac.ed.ph.ballviewer.analysis.AttributeDefault;
 import uk.ac.ed.ph.ballviewer.analysis.AttributeMethod;
 
 /** 
@@ -15,11 +16,19 @@ import uk.ac.ed.ph.ballviewer.analysis.AttributeMethod;
 public class Ball implements Positionable
 {
 	public static final double	DEFAULT_DIAMETER = 50.0d;
+	@AttributeDefault( name = "Colour" )
+	public static final Color	DEFAULT_COLOUR			= Color.gray;
+	@AttributeDefault( name = "Size" )
+	public static final double 	DEFAULT_DIAMETER_OFFSET	= 0d;
+	@AttributeDefault( name = "Transparency" )
+	public static final double	DEFAULT_ALPHA			= 10d;
+	
 	static double		newDiameter = DEFAULT_DIAMETER;
 
 	Vector3				pos;
-	double				diameter;
-	private Color 		colour;
+	double				diameter	= DEFAULT_DIAMETER_OFFSET;
+	private Color 		colour		= DEFAULT_COLOUR;
+	private double 		alpha		= DEFAULT_ALPHA;
 	
 	private double		diameterOffset;		// Tmp
 	
@@ -78,13 +87,18 @@ public class Ball implements Positionable
 		return ( Vector3 )pos.clone();
 	}
 	
-	@AttributeMethod(
-		name	= "Colour"
-	)
+	@AttributeMethod( name	= "Colour" )
 	public void
 	setColour( Color newColour )
 	{
 		colour = newColour;
+	}
+	
+	@AttributeMethod( name = "Transparency" )
+	public void
+	setAlpha( final double alpha )
+	{
+		this.alpha	= alpha;
 	}
 	
 	public Color
@@ -93,6 +107,13 @@ public class Ball implements Positionable
 		return colour;
 	}
 	
+	public double
+	getAlpha()
+	{
+		return alpha;
+	}
+	
+	@AttributeMethod( name = "Size" )
 	public void
 	setDiameterOffset( final double offset )
 	{

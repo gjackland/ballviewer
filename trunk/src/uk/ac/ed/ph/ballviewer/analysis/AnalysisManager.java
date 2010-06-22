@@ -25,7 +25,6 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 	{
 		// Add all the analysers that are available to all system types here
 		registerDefaultAnalyser( CrystalAnalyser.class );
-		//ballAnalyserRegistry.add( TestAnalyser.class );
 	}
 	
 	private static boolean
@@ -131,7 +130,7 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		final SysObjAttribute		attribute
 	)
 	{
-		final HashSet< AnalyserOutput > outputs = outputTypeMap.get( attribute.getAttributeClassType() );
+		final HashSet< AnalyserOutput > outputs = outputTypeMap.get( attribute.getAttributeClass() );
 		return outputs != null ? outputs : new HashSet< AnalyserOutput >();
 	}
 	

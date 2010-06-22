@@ -51,7 +51,7 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 		final SysObjAttribute	attribute
 	)
 	{
-		final Class< ? extends T > outputMapClass = getOutputMapForClass( attribute.getAttributeClassType() );
+		final Class< ? extends T > outputMapClass = getOutputMapForClass( attribute.getAttributeClass() );
 		
 		// Check that we support this attribute type and that it isn't already attached
 		if( outputMapClass != null &&
@@ -61,7 +61,7 @@ public abstract class AnalyserOutput< T extends AnalyserOutputMap >
 			try
 			{
 				final Constructor< ? extends T > ctor = outputMapClass.getDeclaredConstructor( this.getClass() );
-				final T outputMap = ctor.newInstance( this ); // outputMapClass.newInstance();
+				final T outputMap = ctor.newInstance( this );
 				
 				outputMaps.add( outputMap );
 				attachedAttributes.add( attribute );

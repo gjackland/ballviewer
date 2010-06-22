@@ -9,9 +9,12 @@ import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
 public final class BallViewerFramework
 {
 	public static final 	EventDispatcher				eventDispatcher			= new EventDispatcher();
-	private 				StaticSystem				system;
 	private final			AnalysisManager				analyser				= new AnalysisManager( this );
 	private final			ReaderManager				reader					= new ReaderManager();
+	
+	
+	private					int 						tmpCurrentSample		= 0;
+	private 				ExperimentRecord			experimentRecord;
 	
 	BallViewerFramework()
 	{
@@ -22,9 +25,9 @@ public final class BallViewerFramework
 	 *
 	 */
 	void
-	newSystem( StaticSystem newSystem )
+	newExperimentRecord( ExperimentRecord newExperimentRecord )
 	{
-		this.system		= newSystem;
+		this.experimentRecord		= newExperimentRecord;
 		// TODO: Change this so it's on a message rather than direct call
 		analyser.reset();
 	}
@@ -32,7 +35,7 @@ public final class BallViewerFramework
 	public StaticSystem
 	getSystem()
 	{
-		return system;
+		return experimentRecord.getSample( tmpCurrentSample );
 	}
 	
 	public AnalysisManager
@@ -45,5 +48,17 @@ public final class BallViewerFramework
 	getReaderManager()
 	{
 		return reader;
+	}
+	
+	void
+	tmpSetCurrentSample( final int newSample )
+	{
+		tmpCurrentSample = newSample;
+	}
+	
+	public ExperimentRecord
+	getExperimentRecord()
+	{
+		return experimentRecord;
 	}
 }

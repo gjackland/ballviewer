@@ -1,8 +1,11 @@
 package uk.ac.ed.ph.ballviewer;
 
 import java.awt.*;
+
 import java.awt.event.*;
+
 import java.awt.geom.*;
+
 import java.awt.image.*;
 
 import java.text.*;
@@ -16,9 +19,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import uk.ac.ed.ph.ballviewer.analysis.*;
+
 import uk.ac.ed.ph.ballviewer.gui.*;
+
 import uk.ac.ed.ph.ballviewer.io.*;
+
 import uk.ac.ed.ph.ballviewer.math.*;
 
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
@@ -32,7 +41,7 @@ import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
  */
 public class BallViewer extends JFrame implements
 ActionListener, ItemListener, TextListener, MouseListener, MouseMotionListener, MouseWheelListener,
-AttributeAttachListener
+AttributeAttachListener, ChangeListener
 {
 	private static final	String							title						= "Ball Viewer";
 
@@ -71,6 +80,7 @@ AttributeAttachListener
 	
 	//Control Panel - has 2 rows of components
 	private final			Panel							control;
+	private final			JSlider							sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 100, 0 );		// Timeline slider
 	private final			Button							imgCaptureBtn	= new Button( "Save Image" );			// "Save Image"   1st row is always available
 	private final			TextField						ballsizeTxt		= new TextField( Double.toString( ballsize ), 2);		// "ball size"
 	private final			TextField						scaleTxt		= new TextField( Double.toString( scale ), 2 );			// "scale"
@@ -103,6 +113,8 @@ AttributeAttachListener
 	// System objects side panel											
 	private final			SystemObjectsPanel				pSystemObjects;
 	
+	protected 				boolean							sliceOn = false, ffadeOn = false, bfadeOn = false;
+	protected 				boolean							perspective = false;
 	
 	public BallViewer()
 	{
@@ -115,7 +127,7 @@ AttributeAttachListener
 	{
 		this();
 		
-		newSystemFromFile( inputFile );
+		newExperimentRecordFromFile( inputFile );
 	}
 	
 	/** 
@@ -167,10 +179,10 @@ AttributeAttachListener
 		xmin=xmn; xmax=xmx; ymin=ymn; ymax=ymx; //graph corners
 		xrange = xmax-xmin; yrange = ymax-ymin; //graph size	
 
-		final int frwDefault = 900;
-		final int frhDefault = 550;
-		final double aspectDefault = ( double )frwDefault / frhDefault;
-		double aspect = xrange/yrange;		// canvas size must be proportional to graph, 	
+		final int 		frwDefault		= 900;
+		final int 		frhDefault		= 550;
+		final double	aspectDefault	= ( double )frwDefault / frhDefault;
+		final double	aspect			= xrange/yrange;		// canvas size must be proportional to graph, 	
 		if( aspect > aspectDefault )		// but doesn't go outside default bounds
 		{
 		   	frw = (int)frwDefault;
@@ -205,8 +217,12 @@ AttributeAttachListener
 		info.add(xVctr); info.add(yVctr); info.add(zVctr); info.add(pVctr);
 		
 		// set up a control panel - looks absolutely horrendous//
-		control = new Panel( new GridLayout( 2, 1 ) );
+		control = new Panel( new GridLayout( 3, 1 ) );
 		control.setForeground( labelColor );
+		
+		// Add the time slider to the control panel
+		control.add( sTimeline );
+		
 		Panel row, p1,p2,p3,p4,p5;
 		
 		final GridBagLayout			gbl = new GridBagLayout();
@@ -250,10 +266,14 @@ AttributeAttachListener
 		readInputs();
 		
 		// put the infobar, canvas and control panel together
-		this.add( info,BorderLayout.NORTH );
-		this.add( canv,BorderLayout.CENTER );
+		final JPanel mainPanel = new JPanel( new BorderLayout() );
+		mainPanel.add( info,BorderLayout.NORTH );
+		mainPanel.add( canv,BorderLayout.CENTER );
+		mainPanel.add( control,BorderLayout.SOUTH );
+		
+		this.add( mainPanel, BorderLayout.CENTER );
 		this.add( pSidebar, BorderLayout.EAST );
-		this.add( control,BorderLayout.SOUTH );
+		
 		this.pack();    // this fits the frame around it all(neat)
 		
 		this.setVisible(true);
@@ -268,32 +288,34 @@ AttributeAttachListener
 	
 	
 	private boolean
-	newSystemFromFile(
+	newExperimentRecordFromFile(
 		final File		inputFile
 	)
 	{
 		ArrayList< Analyser >	analysers = new ArrayList< Analyser >();
-		StaticSystem newSystem = framework.getReaderManager().getStaticSystem( inputFile, analysers );
-		if( newSystem != null )
+		ExperimentRecord newExperimentRecord = framework.getReaderManager().getStaticSystem( inputFile, analysers );
+		if( newExperimentRecord != null )
 		{
-			return newSystem( newSystem, analysers );
+			return newExperimentRecord( newExperimentRecord, analysers );
 		}
 		return false;
 	}
 	
 	private boolean
-	newSystem(
-		final StaticSystem				newSystem,
+	newExperimentRecord(
+		final ExperimentRecord			newExperimentRecord,
 		final Collection< Analyser >	analysers
 	)
 	{
 		// Tell the framework that we've got a new system
-		framework.newSystem( newSystem );
+		framework.newExperimentRecord( newExperimentRecord );
 		// Update any system specific analysers
 		framework.getAnalysisManager().addAnalysers( analysers );
 		// Get the menu bar to update its list of analysers
 		mBarAnalysis.updateAnalysers();
 		
+		// Only enabled the timeline if an experiment has more than one sample
+		sTimeline.setEnabled( newExperimentRecord.getNumerOfSamples() > 1 );
 		
 		// associate a cellLattice with the viewer.
 		cells = framework.getSystem().getCellLattice();
@@ -306,149 +328,6 @@ AttributeAttachListener
 		return true;
 	}
 	
-	// ActionListener interface //
-	/** 
-	 * Responds to the "Save Image" button by saving an image. 
-	 * @see JpegCreator 
-	 */
-	public void actionPerformed(ActionEvent e)
-	{
-		if (e.getSource()==setZdirBtn) {
-			try {
-				Vector3 xAxis = xVctr.readFields();
-				Vector3 yAxis = yVctr.readFields();
-				Vector3 zAxis = zVctr.readFields();
-				if (Math.abs(zAxis.dot(xAxis)) < Math.abs(zAxis.dot(yAxis))) {
-					yAxis = zAxis.cross(xAxis);
-					xAxis = yAxis.cross(zAxis);
-				}
-				else {
-					xAxis = yAxis.cross(zAxis);
-					yAxis = zAxis.cross(xAxis);
-				}
-				xAxis.normalise(); yAxis.normalise(); zAxis.normalise();
-				base.m = new Matrix3(xAxis, yAxis, zAxis);
-				transform = base;
-				updateInfoFields();
-				drawBalls();
-			} catch (Exception err) {} // if it fails at any point, stop: normal to fail at readFields()	
-		}
-		else if (e.getSource()==imgCaptureBtn) {
-			BufferedImage bimg = new BufferedImage(frw,frh,BufferedImage.TYPE_INT_RGB);
-			Graphics2D g = bimg.createGraphics();
-			g.addRenderingHints( // antialiasing produces a much smoother picture
-				new RenderingHints(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON) );
-			drawBalls(g); 						// draw the image 
-			JpegCreator.saveImage(bimg);  // and save it
-		}
-	}
-	
-	// ItemListener interface //
-	/** Responds to the checkboxes, reads inputs and updates display. */
-	public void itemStateChanged(ItemEvent e)
-	{  
-		updateCheckboxes();
-		readInputs();
-		drawBalls();
-	}
-	
-	// TextListener interface //
-	/** Responds to the textfields by reading them and updates display. */
-	public void textValueChanged (TextEvent e)
-	{
-		readInputs();
-		drawBalls();
-	}
-	
-	// MouseListener interface - unused methods must also be declared //
-	/** Responds a mouse button press by creating an anchor point for dragging. */
-	public void mousePressed(MouseEvent e)
-	{	anchor = e.getPoint();	}
-	
-	/** Responds a mouse button release by saving the current transform. */
-	public void mouseReleased(MouseEvent e)
-	{ 
-		mouseDragged(e);	base = transform; // do final drag then save this transform as the base
-	}
-	
-		/** Not used. */ public void mouseClicked(MouseEvent e) {} 
-		/** Not used. */ public void mouseEntered(MouseEvent e) {}
-		/** Not used. */ public void mouseExited(MouseEvent e) {}
-	
-	// MouseMotionListener interface - unused methods must also be declared //
-	/** 
-	 * Responds to mouse dragging. <br> 
-	 * If left-dragging on the canvas, does rotation. <br>
-	 * If right-dragging on the canvas, does translation. <br>
-	 * If dragging on the DragPad, does z-axis rotation. <br>
-	 * Updates display, including direction/position vectors (top row).
-	 */
-   public void mouseDragged(MouseEvent e)
-   {	// responds to mouse dragging
-		pos=e.getPoint();
-		if (e.getSource() == canv) {					
-			if (pos.equals(anchor)) { temp = new Transform(); } //ie does nothing
-			else {
-				final int LEFT = MouseEvent.BUTTON1_DOWN_MASK;
-				final int RIGHT = MouseEvent.BUTTON3_DOWN_MASK;
-				int flags = e.getModifiersEx();
-				if ((flags & LEFT)==LEFT) { // if left dragging
-					Vector3 sweep = new Vector3(pos.x-anchor.x,pos.y-anchor.y,0);
-					Vector3 axis = sweep.cross(new Vector3(0,0,1)); // get a perp. axis
-					double angle=sweep.modulus()/pixPerRad;     // and rotate proportional to sweep
-					temp = Transform.rotation(axis, angle);
-				}
-				else if ((flags & RIGHT)==RIGHT) { // if right dragging
-					Vector3 t = new Vector3((pos.x-anchor.x)/xsc,(pos.y-anchor.y)/ysc,0);
-					temp = Transform.translation(t); // it's a translation!
-				}
-			}	
-		}
-		else if (e.getSource() == zARDP) {  // if its on the rotation pad
-			temp = Transform.rotation(new Vector3(0,0,-1),(pos.x-anchor.x)/pixPerRad); // do z axis rot.
-		}						
-		transform = Transform.join(temp,base); // finally add transform
-		updateInfoFields();  
-		drawBalls();
-	}
-		
-		/** Not used. */ public void mouseMoved(MouseEvent e) {}
-	
-	// MouseWheelListener interface //
-	/** Responds to mouse wheel with a z axis translation. Updates display, including position. */
-	public void mouseWheelMoved(MouseWheelEvent e)
-	{
-		int clicks = e.getWheelRotation();
-		temp = Transform.translation(new Vector3(0.0,0.0,clicks*unitsPerClick) );
-		transform = Transform.join(temp,base); // finally add transform
-		base = transform;     // mousewheel rotation is not transient
-		updateInfoFields();   // shouldn't change, but just in case!
-	   drawBalls();	
-	}
-	
-	// Attribute attach listener interface //
-	public void
-	attributeAttached(
-		final AnalyserOutput	output,
-		final SysObjAttribute	attribute
-	)
-	{
-		drawBalls();
-	}
-	
-	public void
-	attributeDetached(
-		final AnalyserOutput	output,
-		final SysObjAttribute	attribute
-	)
-	{
-		drawBalls();
-	}
-	
-	// End of input interfaces //
-	
-	boolean sliceOn = false, ffadeOn = false, bfadeOn = false;
-	boolean perspective = false;
 	void updateCheckboxes()
 	{
 		boolean boo = sliceChk.getState();
@@ -592,6 +471,7 @@ AttributeAttachListener
 			{
 				final Ball bCopy	= new Ball( transform.appliedTo( b.pos ), b.getColour() );
 				bCopy.setDiameterOffset( b.getDiameterOffset() );
+				bCopy.setAlpha( b.getAlpha() );
 				tr.addNode( bCopy, bCopy.pos.z );
 			}
 			
@@ -620,10 +500,11 @@ AttributeAttachListener
 					
 					//System.out.println( "Diameter: " + b.diameter + " offset: " + b.getDiameterOffset() );
 					
-					double r=d/2;
-					double cx = b.pos.x*zsc*xsc;
-					double cy = b.pos.y*zsc*ysc;
-					g.setColor( b.getColour() );
+					final double r=d/2;
+					final double cx = b.pos.x*zsc*xsc;
+					final double cy = b.pos.y*zsc*ysc;
+					final Color bColor = b.getColour();
+					g.setColor( new Color( bColor.getRed(), bColor.getGreen(), bColor.getBlue(), ( int )( b.getAlpha() * 25.5d ) ) );
 				
 					if (!sliceOn || (z>fslice && z<bslice))
 					{
@@ -697,12 +578,166 @@ AttributeAttachListener
 		}
 	}
 	
-	private static String getTitle( String fnm )
-	{ // fnm = filename, ext = extension
-		int si = fnm.lastIndexOf("/"); 	// slash index
-		if (si == -1) { return fnm; }	// if there is no slash in the name //
-		else { return fnm.substring(si+1); }
+	// INTERFACES /////////////////////////////////////////////////////////////
+	
+	@Override
+	public void
+	stateChanged( final ChangeEvent e )
+	{
+		if( e.getSource() == sTimeline )
+		{
+		    // The slider has changed value
+		    final double dValue = ( double )sTimeline.getValue() / 100d;
+		    final int		newCurrentSample	= ( int )( dValue * framework.getExperimentRecord().getNumerOfSamples() );
+		    
+		    framework.tmpSetCurrentSample( newCurrentSample );
+		    
+		}
 	}
+	
+	// ActionListener interface //
+	/** 
+	 * Responds to the "Save Image" button by saving an image. 
+	 * @see JpegCreator 
+	 */
+	@Override
+	public void
+	actionPerformed( final ActionEvent e )
+	{
+		if (e.getSource()==setZdirBtn) {
+			try {
+				Vector3 xAxis = xVctr.readFields();
+				Vector3 yAxis = yVctr.readFields();
+				Vector3 zAxis = zVctr.readFields();
+				if (Math.abs(zAxis.dot(xAxis)) < Math.abs(zAxis.dot(yAxis))) {
+					yAxis = zAxis.cross(xAxis);
+					xAxis = yAxis.cross(zAxis);
+				}
+				else {
+					xAxis = yAxis.cross(zAxis);
+					yAxis = zAxis.cross(xAxis);
+				}
+				xAxis.normalise(); yAxis.normalise(); zAxis.normalise();
+				base.m = new Matrix3(xAxis, yAxis, zAxis);
+				transform = base;
+				updateInfoFields();
+				drawBalls();
+			} catch (Exception err) {} // if it fails at any point, stop: normal to fail at readFields()	
+		}
+		else if (e.getSource()==imgCaptureBtn) {
+			BufferedImage bimg = new BufferedImage(frw,frh,BufferedImage.TYPE_INT_RGB);
+			Graphics2D g = bimg.createGraphics();
+			g.addRenderingHints( // antialiasing produces a much smoother picture
+				new RenderingHints(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON) );
+			drawBalls(g); 						// draw the image 
+			JpegCreator.saveImage(bimg);  // and save it
+		}
+	}
+	
+	// ItemListener interface //
+	/** Responds to the checkboxes, reads inputs and updates display. */
+	public void itemStateChanged(ItemEvent e)
+	{  
+		updateCheckboxes();
+		readInputs();
+		drawBalls();
+	}
+	
+	// TextListener interface //
+	/** Responds to the textfields by reading them and updates display. */
+	public void textValueChanged (TextEvent e)
+	{
+		readInputs();
+		drawBalls();
+	}
+	
+	// MouseListener interface - unused methods must also be declared //
+	/** Responds a mouse button press by creating an anchor point for dragging. */
+	public void mousePressed(MouseEvent e)
+	{	anchor = e.getPoint();	}
+	
+	/** Responds a mouse button release by saving the current transform. */
+	public void mouseReleased(MouseEvent e)
+	{ 
+		mouseDragged(e);	base = transform; // do final drag then save this transform as the base
+	}
+	
+		/** Not used. */ public void mouseClicked(MouseEvent e) {} 
+		/** Not used. */ public void mouseEntered(MouseEvent e) {}
+		/** Not used. */ public void mouseExited(MouseEvent e) {}
+	
+	// MouseMotionListener interface - unused methods must also be declared //
+	/** 
+	 * Responds to mouse dragging. <br> 
+	 * If left-dragging on the canvas, does rotation. <br>
+	 * If right-dragging on the canvas, does translation. <br>
+	 * If dragging on the DragPad, does z-axis rotation. <br>
+	 * Updates display, including direction/position vectors (top row).
+	 */
+   public void mouseDragged(MouseEvent e)
+   {	// responds to mouse dragging
+		pos=e.getPoint();
+		if (e.getSource() == canv) {					
+			if (pos.equals(anchor)) { temp = new Transform(); } //ie does nothing
+			else {
+				final int LEFT = MouseEvent.BUTTON1_DOWN_MASK;
+				final int RIGHT = MouseEvent.BUTTON3_DOWN_MASK;
+				int flags = e.getModifiersEx();
+				if ((flags & LEFT)==LEFT) { // if left dragging
+					Vector3 sweep = new Vector3(pos.x-anchor.x,pos.y-anchor.y,0);
+					Vector3 axis = sweep.cross(new Vector3(0,0,1)); // get a perp. axis
+					double angle=sweep.modulus()/pixPerRad;     // and rotate proportional to sweep
+					temp = Transform.rotation(axis, angle);
+				}
+				else if ((flags & RIGHT)==RIGHT) { // if right dragging
+					Vector3 t = new Vector3((pos.x-anchor.x)/xsc,(pos.y-anchor.y)/ysc,0);
+					temp = Transform.translation(t); // it's a translation!
+				}
+			}	
+		}
+		else if (e.getSource() == zARDP) {  // if its on the rotation pad
+			temp = Transform.rotation(new Vector3(0,0,-1),(pos.x-anchor.x)/pixPerRad); // do z axis rot.
+		}						
+		transform = Transform.join(temp,base); // finally add transform
+		updateInfoFields();  
+		drawBalls();
+	}
+		
+		/** Not used. */ public void mouseMoved(MouseEvent e) {}
+	
+	// MouseWheelListener interface //
+	/** Responds to mouse wheel with a z axis translation. Updates display, including position. */
+	public void mouseWheelMoved(MouseWheelEvent e)
+	{
+		int clicks = e.getWheelRotation();
+		temp = Transform.translation(new Vector3(0.0,0.0,clicks*unitsPerClick) );
+		transform = Transform.join(temp,base); // finally add transform
+		base = transform;     // mousewheel rotation is not transient
+		updateInfoFields();   // shouldn't change, but just in case!
+	   drawBalls();	
+	}
+	
+	// Attribute attach listener interface //
+	public void
+	attributeAttached(
+		final AnalyserOutput	output,
+		final SysObjAttribute	attribute
+	)
+	{
+		drawBalls();
+	}
+	
+	public void
+	attributeDetached(
+		final AnalyserOutput	output,
+		final SysObjAttribute	attribute
+	)
+	{
+		drawBalls();
+	}
+
+	
+	// END INTERFACES ////////////////////////////////////////////////////////
 
 }
 
