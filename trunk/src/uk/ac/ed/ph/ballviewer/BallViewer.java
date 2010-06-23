@@ -45,6 +45,145 @@ public class BallViewer extends JFrame implements
 ActionListener, ItemListener, TextListener, MouseListener, MouseMotionListener, MouseWheelListener,
 AttributeAttachListener, ChangeListener
 {
+	private class ControlPanel extends JPanel implements ActionListener, TextListener, ChangeListener, ItemListener
+	{
+		private final	BallViewer		ballViewer;
+		
+		private final	JSlider			sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 1, 0 );		// Timeline slider
+		private final	JButton			bSaveImage		= new JButton( "Save Image" );			// "Save Image"   1st row is always available
+		private final	JButton			bSetZDir		= new JButton( "Set Z dir" );
+		
+		private final	JTextField		tfBallSize		= new JTextField( Double.toString( ballsize ), 4 );		// "ball size"
+		
+		private final	JTextField		tfScale			= new JTextField( Double.toString( scale ), 4 );			// "scale"
+		
+		private final	JCheckBox		cbPerspective	= new JCheckBox( "Perspective", false );	// "perspective"
+		
+		private	final	DragPad			zARDP			= new DragPad();						// "z axis DragPad"
+		
+		ControlPanel( final BallViewer ballViewer )
+		{
+			this.ballViewer = ballViewer;
+			
+			this.setLayout( new GridLayout( 3, 1 ) );
+			
+			// LISTENERS //////////////////////////
+			sTimeline.addChangeListener( this );
+			imgCaptureBtn.addActionListener( this );
+			setZdirBtn.addActionListener( this );		
+			ballsizeTxt.addTextListener( this ); 
+			scaleTxt.addTextListener( this );
+			perspectiveChk.addItemListener( this ); 
+			
+			// TIMELINE SLIDER /////////////////////
+			sTimeline.setEnabled( false );
+			sTimeline.setMajorTickSpacing( 1 );
+			sTimeline.setSnapToTicks( true );
+			sTimeline.setPaintLabels( true );
+			
+			// DRAG PAD ////////////////////////////
+			final Dimension dims = zARDP.getSize();
+			dims.setSize( 150, dims.getHeight() );
+			zARDP.setPreferredSize( dims );
+
+			// COMPONENTS ADDING ///////////////////
+			this.add( sTimeline );
+			final GridBagLayout			gbl = new GridBagLayout();
+			final GridBagConstraints	gbc = new GridBagConstraints();
+			JPanel	row = new JPanel();
+			row.add( bSaveImage );
+			row.add( bSetZDir );
+			row.add( new JLabel( "Ball size: ", SwingConstants.RIGHT ) );
+			row.add( tfBallSize );
+			row.add( new JLabel( "Scale: ", SwingConstants.RIGHT ) );
+			row.add( tfScale );
+			row.add( cbPerspective );
+			// All this just to get a decent size for zARDP
+			gbc.weightx = 1.0;
+			gbc.fill	= gbc.BOTH; 
+			gbl.setConstraints( zARDP, gbc );
+			row.add( zARDP );
+			this.add( row );
+		}
+		
+		// INTERFACES ////////////////////////////////////////////////
+		
+		// ACTION LISTENER ///////////////////////////////////////////
+		/** 
+		 * Responds to the "Save Image" button by saving an image. 
+		 * @see JpegCreator 
+		 */
+		@Override
+		public void
+		actionPerformed( final ActionEvent e )
+		{
+//			if (e.getSource()==setZdirBtn) {
+//				try {
+//					Vector3 xAxis = xVctr.readFields();
+//					Vector3 yAxis = yVctr.readFields();
+//					Vector3 zAxis = zVctr.readFields();
+//					if (Math.abs(zAxis.dot(xAxis)) < Math.abs(zAxis.dot(yAxis))) {
+//						yAxis = zAxis.cross(xAxis);
+//						xAxis = yAxis.cross(zAxis);
+//					}
+//					else {
+//						xAxis = yAxis.cross(zAxis);
+//						yAxis = zAxis.cross(xAxis);
+//					}
+//					xAxis.normalise(); yAxis.normalise(); zAxis.normalise();
+//					base.m = new Matrix3(xAxis, yAxis, zAxis);
+//					transform = base;
+//					updateInfoFields();
+//					drawBalls();
+//				} catch (Exception err) {} // if it fails at any point, stop: normal to fail at readFields()	
+//			}
+//			else if (e.getSource()==imgCaptureBtn) {
+//				BufferedImage bimg = new BufferedImage(frw,frh,BufferedImage.TYPE_INT_RGB);
+//				Graphics2D g = bimg.createGraphics();
+//				g.addRenderingHints( // antialiasing produces a much smoother picture
+//					new RenderingHints(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON) );
+//				drawBalls(g); 						// draw the image 
+//				JpegCreator.saveImage(bimg);  // and save it
+//			}
+		}
+		
+		// TEXT LISTENER //////////////////////////////////////////////////////////
+		/** Responds to the textfields by reading them and updates display. */
+		public void
+		textValueChanged( final TextEvent e )
+		{
+			//readInputs();
+			//drawBalls();
+		}
+		
+		// CHANGE LISTENER ////////////////////////////////////////////////////////
+		@Override
+		public void
+		stateChanged( final ChangeEvent e )
+		{
+			if( e.getSource() == sTimeline )
+			{
+//			    // The slider has changed value		    
+//			    framework.tmpSetCurrentSample( sTimeline.getValue() );
+//			    
+//			    // Fire a timeline changed event
+//			    framework.eventDispatcher.notify( new TimelineEvent( sTimeline.getValue() ) );
+//			    
+//			    drawBalls();
+			}
+		}
+		
+		// ITEM LISTENER //////////////////////////////////////////////////////////		
+		public void
+		itemStateChanged( final ItemEvent e )
+		{  
+			//updateCheckboxes();
+			//readInputs();
+			//drawBalls();
+		}
+		
+	}
+	
 	private static final	String							title						= "Ball Viewer";
 
 	// The framework that underpins the GUI
@@ -107,7 +246,7 @@ AttributeAttachListener, ChangeListener
 	private	final			Vector3Panel					xVctr 			= new Vector3Panel( "X", 4 ),
 															yVctr 			= new Vector3Panel( "Y", 4 ),
 															zVctr 			= new Vector3Panel( "Z", 4 ),
-															pVctr 			= new Vector3Panel( "P", 3 );
+															pVctr 			= new Vector3Panel( "P", 4 );
 
 
 	// Sidebar with auxilary information
@@ -278,6 +417,7 @@ AttributeAttachListener, ChangeListener
 		mainPanel.add( info,BorderLayout.NORTH );
 		mainPanel.add( canv,BorderLayout.CENTER );
 		mainPanel.add( control,BorderLayout.SOUTH );
+		//mainPanel.add( new ControlPanel( this ), BorderLayout.SOUTH );
 		
 		this.add( mainPanel, BorderLayout.CENTER );
 		this.add( pSidebar, BorderLayout.EAST );
@@ -427,6 +567,12 @@ AttributeAttachListener, ChangeListener
 	}
 	public void setPerspective(boolean boo) { perspective = boo; }
 	
+	private void
+	saveImage()
+	{
+		
+	}
+	
 	// Draw the thing! called by canv.paint, 
 	// windowActivated, mouseDragged, mouseWheelMoved, itemStateChanged, textValueChanged
 	/** Updates the ball display. */
@@ -563,6 +709,15 @@ AttributeAttachListener, ChangeListener
 	public static void main( String arg[] )
 	{	
 		System.out.println( "\nStarting App: " + new Date() );
+		
+		// Set the look and feel to the native for that system
+		try
+		{
+		    // Set System L&F
+			UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+		}
+		catch( Exception e ) {}
+
 		
 		String inputname="", outputname="";
 		if( arg.length==0 )
@@ -762,36 +917,57 @@ AttributeAttachListener, ChangeListener
 
 }
 
-class Vector3Panel extends Panel { // Convenience class - 3 TextFields in a Panel //
+// Convenience class - 3 TextFields in a Panel //
+final class Vector3Panel extends JPanel
+{ 
 	static final DecimalFormat nf = new DecimalFormat("0.0000");
-	TextField xTxt, yTxt, zTxt;
+	private TextField xTxt, yTxt, zTxt;
 		
-		Vector3Panel(String name, int len) { // 'len' is spaces per TextField
-			Label label = new Label(name); 
-			xTxt = new TextField(len);	yTxt = new TextField(len);	zTxt = new TextField(len);
-			add(label); add(xTxt); add(yTxt); add(zTxt);
-		}
-		
-		public void updateFields(Vector3 v) { updateFields(v.x,v.y,v.z); }
-		public void updateFields(double x, double y, double z) {
-			xTxt.setText(nf.format(x)); 
-			yTxt.setText(nf.format(y));
-			zTxt.setText(nf.format(z));
-		}
-		public Vector3 readFields() throws Exception {
-			double x = new Double(xTxt.getText()).doubleValue(); 
-			double y = new Double(yTxt.getText()).doubleValue(); 
-			double z = new Double(zTxt.getText()).doubleValue(); 
-			return new Vector3(x,y,z);
-		} 
+	Vector3Panel(
+		final String	name,
+		final int		len  // 'len' is spaces per TextField
+	)
+	{
+		Label label = new Label(name); 
+		xTxt = new TextField(len);	yTxt = new TextField(len);	zTxt = new TextField(len);
+		add(label); add(xTxt); add(yTxt); add(zTxt);
+	}
+	
+	public final void
+	updateFields( final Vector3 v )
+	{
+		updateFields(v.x,v.y,v.z);
+	}
+	
+	public final void
+	updateFields(
+		final double	x,
+		final double	y,
+		final double	z
+	)
+	{
+		xTxt.setText(nf.format(x)); 
+		yTxt.setText(nf.format(y));
+		zTxt.setText(nf.format(z));
+	}
+	
+	public final Vector3
+	readFields()
+	throws Exception
+	{
+		final double x = new Double(xTxt.getText()).doubleValue(); 
+		final double y = new Double(yTxt.getText()).doubleValue(); 
+		final double z = new Double(zTxt.getText()).doubleValue(); 
+		return new Vector3( x, y, z );
+	} 
 	
 }
 
-class DragPad extends Panel
+class DragPad extends JPanel
 {  // Coloured panel decorated with text //
-	private final int gap = 4;
-	private final int texthalfwidth  =35;	
-	private final int texthalfheight =4;
+	private final int gap				= 4;
+	private final int texthalfwidth 	= 35;	
+	private final int texthalfheight	= 4;
 	
 	DragPad() {	super();	repaint();	}
 	
