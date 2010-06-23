@@ -53,7 +53,7 @@ public final class ReaderManager
 	
 	public ExperimentRecord
 	getStaticSystem(
-		final String					inputFilename,
+		final String[]					inputFilenames,
 		final Collection< Analyser >	analysers
 	) throws IllegalArgumentException
 	{
@@ -61,7 +61,12 @@ public final class ReaderManager
 		{
 			throw new IllegalArgumentException( "ReaderManager::getStaticSystem illegal argument: passed null analysers collection" );
 		}
-		return getStaticSystem( new File( inputFilename ), analysers );
+		final File inputFiles[]	= new File[ inputFilenames.length ];
+		for( int i = 0 ; i < inputFilenames.length; ++i )
+		{
+			inputFiles[ i ] = new File( inputFilenames[ i ] );
+		}
+		return getStaticSystem( inputFiles, analysers );
 	}
 	
 	
@@ -79,7 +84,7 @@ public final class ReaderManager
 	 */
 	public ExperimentRecord
 	getStaticSystem(
-		final File						inputFile,
+		final File[]						inputFiles,
 		final Collection< Analyser >	analysers
 	) throws IllegalArgumentException
 	{
@@ -87,15 +92,15 @@ public final class ReaderManager
 		{
 			throw new IllegalArgumentException( "ReaderManager::getStaticSystem illegal argument: passed null analysers collection" );
 		}
-		if( inputFile.isFile() )
+		if( inputFiles[ 0 ].isFile() )
 		{
-			final InputReader r = readerRegistry.get( getFileExtensions( inputFile ) );
+			final InputReader r = readerRegistry.get( getFileExtensions( inputFiles[ 0 ] ) );
 			if( r != null )
 			{
 				ExperimentRecord expRec = null;
 				try
 				{
-					expRec = r.getExperimentRecord( inputFile, analysers );
+					expRec = r.getExperimentRecord( inputFiles, analysers );
 				}
 				catch( Exception e )
 				{

@@ -10,8 +10,21 @@ import uk.ac.ed.ph.ballviewer.math.*;
  */
 public class SystemProperties
 {
-	public SystemCell	supercell;
+	private SystemCell	supercell;
 	
-	public boolean	periodic = false;
+	public boolean		periodic = false;
+	
+	
+	public void
+	setSupercell( final SystemCell supercell )
+	{
+		this.supercell	= supercell;
+	}
+	
+	public SystemCell
+	getSupercell()
+	{
+		return supercell;
+	}
 
 }

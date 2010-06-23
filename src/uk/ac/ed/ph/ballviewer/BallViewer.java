@@ -33,6 +33,8 @@ import uk.ac.ed.ph.ballviewer.math.*;
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachListener;
 import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
+import uk.ac.ed.ph.ballviewer.event.TimelineEvent;
+import uk.ac.ed.ph.ballviewer.event.TimelineListener;
 
 /** 
  * This is a viewer for 3d configurations of objects, especially balls. <br>
@@ -50,6 +52,7 @@ AttributeAttachListener, ChangeListener
 	                                                    	
 	// The menu bar                 		            	
 	private final			JMenuBar						mBar						= new JMenuBar();
+	private final			JMenu							mFile						= new JMenu( "File" );
 	private final			AnalysisMenu					mBarAnalysis;
 	
 	//Graphics//
@@ -80,7 +83,7 @@ AttributeAttachListener, ChangeListener
 	
 	//Control Panel - has 2 rows of components
 	private final			Panel							control;
-	private final			JSlider							sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 100, 0 );		// Timeline slider
+	private final			JSlider							sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 1, 0 );		// Timeline slider
 	private final			Button							imgCaptureBtn	= new Button( "Save Image" );			// "Save Image"   1st row is always available
 	private final			TextField						ballsizeTxt		= new TextField( Double.toString( ballsize ), 2);		// "ball size"
 	private final			TextField						scaleTxt		= new TextField( Double.toString( scale ), 2 );			// "scale"
@@ -122,12 +125,12 @@ AttributeAttachListener, ChangeListener
 	}
 	
 	public BallViewer(
-		final File			inputFile
+		final File[]			inputFiles
 	)
 	{
 		this();
 		
-		newExperimentRecordFromFile( inputFile );
+		newExperimentRecordFromFiles( inputFiles );
 	}
 	
 	/** 
@@ -220,7 +223,12 @@ AttributeAttachListener, ChangeListener
 		control = new Panel( new GridLayout( 3, 1 ) );
 		control.setForeground( labelColor );
 		
-		// Add the time slider to the control panel
+		// TIMELINE SLIDER /////////////////////
+		sTimeline.setEnabled( false );
+		sTimeline.setMajorTickSpacing( 1 );
+		sTimeline.setSnapToTicks( true );
+		sTimeline.setPaintLabels( true );
+		sTimeline.addChangeListener( this );
 		control.add( sTimeline );
 		
 		Panel row, p1,p2,p3,p4,p5;
@@ -288,12 +296,12 @@ AttributeAttachListener, ChangeListener
 	
 	
 	private boolean
-	newExperimentRecordFromFile(
-		final File		inputFile
+	newExperimentRecordFromFiles(
+		final File[]		inputFiles
 	)
 	{
 		ArrayList< Analyser >	analysers = new ArrayList< Analyser >();
-		ExperimentRecord newExperimentRecord = framework.getReaderManager().getStaticSystem( inputFile, analysers );
+		ExperimentRecord newExperimentRecord = framework.getReaderManager().getStaticSystem( inputFiles, analysers );
 		if( newExperimentRecord != null )
 		{
 			return newExperimentRecord( newExperimentRecord, analysers );
@@ -314,8 +322,16 @@ AttributeAttachListener, ChangeListener
 		// Get the menu bar to update its list of analysers
 		mBarAnalysis.updateAnalysers();
 		
+		
+		// TIMELINE //////////
 		// Only enabled the timeline if an experiment has more than one sample
-		sTimeline.setEnabled( newExperimentRecord.getNumerOfSamples() > 1 );
+		final int numSamples = newExperimentRecord.getNumerOfSamples();
+		sTimeline.setEnabled( numSamples > 1 );
+		if( numSamples > 1 )
+		{
+			sTimeline.setMinimum( 0 );
+			sTimeline.setMaximum( numSamples - 1 );
+		}
 		
 		// associate a cellLattice with the viewer.
 		cells = framework.getSystem().getCellLattice();
@@ -556,13 +572,17 @@ AttributeAttachListener, ChangeListener
 		else if (arg.length==1) { 
 			inputname = arg[0];
 			outputname = changeFileExtension(arg[0],".dun");
-			new BallViewer( new File( inputname ) );
+			final File[] inputFiles = { new File( inputname ) };
+			new BallViewer(  inputFiles );
 		}
-		else if (arg.length==2)
-		{ 
-			inputname = arg[0];
-			outputname = arg[1];
-			new BallViewer( new File( inputname ) );
+		else if (arg.length >= 2 )
+		{
+			final File[] inputFiles = new File[ arg.length ];
+			for( int i = 0; i < arg.length; ++i )
+			{
+				inputFiles[ i ] = new File( arg[ i ] );
+			}
+			new BallViewer( inputFiles );
 		}
 	}
 	
@@ -586,12 +606,13 @@ AttributeAttachListener, ChangeListener
 	{
 		if( e.getSource() == sTimeline )
 		{
-		    // The slider has changed value
-		    final double dValue = ( double )sTimeline.getValue() / 100d;
-		    final int		newCurrentSample	= ( int )( dValue * framework.getExperimentRecord().getNumerOfSamples() );
+		    // The slider has changed value		    
+		    framework.tmpSetCurrentSample( sTimeline.getValue() );
 		    
-		    framework.tmpSetCurrentSample( newCurrentSample );
+		    // Fire a timeline changed event
+		    framework.eventDispatcher.notify( new TimelineEvent( sTimeline.getValue() ) );
 		    
+		    drawBalls();
 		}
 	}
 	

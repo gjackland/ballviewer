@@ -15,8 +15,10 @@ import uk.ac.ed.ph.ballviewer.event.AnalyserChangeEvent;
 import uk.ac.ed.ph.ballviewer.event.AnalyserChangeListener;
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachListener;
+import uk.ac.ed.ph.ballviewer.event.TimelineEvent;
+import uk.ac.ed.ph.ballviewer.event.TimelineListener;
 
-public final class AnalysisManager implements AnalyserChangeListener, AttributeAttachListener
+public final class AnalysisManager implements AnalyserChangeListener, AttributeAttachListener, TimelineListener
 {
 	private static final ArrayList< Class< ? extends Analyser > > defaultAnalyserRegistry	=
 		new ArrayList< Class< ? extends Analyser > >();
@@ -65,13 +67,15 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		// Register ourselves to receive analyser change events
 		BallViewerFramework.eventDispatcher.listen( AnalyserChangeEvent.class, this );
 		BallViewerFramework.eventDispatcher.listen( AttributeAttachEvent.class, this );
+		BallViewerFramework.eventDispatcher.listen( TimelineEvent.class, this );
 		
-		reset();
+		//reset();
 	}
 	
 	public void
 	reset()
 	{
+		analysers.clear();
 		ballAnalysers.clear();
 		
 		// Let's create instances of classes from the ball analyser registry
@@ -147,7 +151,6 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		final StaticSystem		system
 	)
 	{
-		System.out.println( "Updating output" );
 		for( BallAnalyser bAnalyser: ballAnalysers )
 		{
 			bAnalyser.updateAttributes( system );
@@ -193,6 +196,13 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 	}
 	
 	// INTERFACES //////////////////////////////////////////////////////////
+	
+	@Override
+	public void
+	timelineChanged( final int currentSample )
+	{
+		update( framework.getSystem() );
+	}
 	
 	@Override
 	public void
