@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public final class ExperimentRecord
 {
 	private final SystemProperties				systemProperties;		// The global properties of the system 
+	// Snapshots of the system as it varies with time
 	private final ArrayList< StaticSystem >		systemSamples	= new ArrayList< StaticSystem >();
 	
 	
@@ -21,7 +22,6 @@ public final class ExperimentRecord
 	{
 		return systemProperties;
 	}
-	
 	
 	public int
 	getNumerOfSamples()

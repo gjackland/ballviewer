@@ -2,6 +2,10 @@ package uk.ac.ed.ph.ballviewer;
 
 import uk.ac.ed.ph.ballviewer.math.*;
 
+/*
+ *	Abstract class to represent a system supercell.
+ *
+ */
 public abstract class SystemCell
 {
 	public abstract Aabb
@@ -11,13 +15,28 @@ public abstract class SystemCell
 	getCentre();
 	
 	public abstract Vector3
-	getMinimumVector( final Tuple3 from, final Tuple3 to );
+	getMinimumVector(
+		final Tuple3	from,
+		final Tuple3	to
+	);
 	
-	public abstract double
-	getMinimumDistance( final Tuple3 from, final Tuple3 to );
+	public double
+	getMinimumDistance(
+		final Tuple3		from,
+		final Tuple3		to
+	)
+	{
+		return getMinimumVector( from, to ).modulus();
+	}
 	
-	public abstract double
-	getMinimumDistanceSq( final Tuple3 from, final Tuple3 to );
+	public double
+	getMinimumDistanceSq(
+		final Tuple3		from,
+		final Tuple3		to
+	)
+	{
+    	return getMinimumVector( from, to ).modulusSq();
+	}
 	
 	public abstract CellLattice
 	generateCellLattice( final double cellSize );

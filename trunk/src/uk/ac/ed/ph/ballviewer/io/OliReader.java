@@ -16,12 +16,19 @@ class OliReader implements InputReader
 		return ( new String[]{ "oli" } );
 	}
 	
+	@Override
 	public ExperimentRecord
 	getExperimentRecord(
-		final	File								inputFile,
+		final	File[]								inputFiles,
 		final	Collection< Analyser >	analysers
 	)
 	{
+		if( inputFiles == null || inputFiles.length == 0 || inputFiles[ 0 ] == null )
+		{
+			return null;
+		}
+		final File inputFile = inputFiles[ 0 ];
+		
 		StaticSystem sys = new StaticSystem();
 		
 		System.out.println("  Assuming 3 x Coordinates + Species input" );

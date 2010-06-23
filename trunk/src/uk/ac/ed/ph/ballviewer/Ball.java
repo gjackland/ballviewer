@@ -13,7 +13,7 @@ import uk.ac.ed.ph.ballviewer.analysis.AttributeMethod;
  * Ball does NOT extend Particle and has none of its functionality. 
  * It is specified by a position (Vector3), a diameter and a colour. 
  */
-public class Ball implements Positionable
+public class Ball extends SystemObject implements Positionable
 {
 	public static final double	DEFAULT_DIAMETER = 50.0d;
 	@AttributeDefault( name = "Colour" )

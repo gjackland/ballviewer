@@ -98,7 +98,8 @@ public class StaticSystem
 	public void
 	initialise()
 	{
-		final Aabb		aabb = properties.supercell.getAabb();
+		final SystemCell	supercell	= properties.getSupercell();
+		final Aabb			aabb		= supercell.getAabb();
 
 		// Should we determine the dimensions of the system or have they already been caluclated
 		if( determineDimensions )
@@ -123,7 +124,7 @@ public class StaticSystem
 			double cs = Math.pow( n * aabb.xRange * aabb.yRange * aabb.zRange / p.length, 1.0 / 3 ); // corresponding cell size
 			// this rough lattice is need to support the analysis of the standard radius,
 			//  but it isn't efficient enough to use for the full analysis (millions of balls?)
-			cells = properties.supercell.generateCellLattice( cs );
+			cells = supercell.generateCellLattice( cs );
 			
 			for (int i=0;i<p.length;i++) cells.add(p[i]); //add all the ptcls
 			cells.trimDown(); // and tidy up the lattice - it's ready for use
@@ -141,7 +142,7 @@ public class StaticSystem
 		//  so all neighbours must be in same cell or neighbouring cell (+-1 for x,y,z)
 		//	 also note for same reason there is an extra empty cell thickness at each edge 
 		//  for periodic bc's the opposite edges could reference the same ObjectList
-		cells = properties.supercell.generateCellLattice( R );
+		cells = supercell.generateCellLattice( R );
 		
 		for (int i=0;i<p.length;i++) cells.add(p[i]);
 		cells.trimDown();
@@ -242,7 +243,7 @@ public class StaticSystem
 	public Vector3
 	getCentre()
 	{
-		return properties.supercell.getCentre();
+		return properties.getSupercell().getCentre();
 	}
 	
 }

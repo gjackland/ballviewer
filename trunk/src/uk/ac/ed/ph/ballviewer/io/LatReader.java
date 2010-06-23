@@ -16,12 +16,19 @@ class LatReader implements InputReader
 		return ( new String[]{ "gdf" } );
 	}
 	
+	@Override
 	public ExperimentRecord
 	getExperimentRecord(
-		final	File								inputFile,
+		final	File[]								inputFiles,
 		final	Collection< Analyser >	analysers
 	)
 	{
+		if( inputFiles == null || inputFiles.length == 0 || inputFiles[ 0 ] == null )
+		{
+			return null;
+		}
+		final File inputFile = inputFiles[ 0 ];
+		
 		StaticSystem sys = new StaticSystem();
 		
 		try

@@ -60,91 +60,97 @@ class MoldyReader implements InputReader
 	@Override
 	public ExperimentRecord
 	getExperimentRecord(
-		final	File								inputFile,
+		final	File[]								inputFiles,
 		final	Collection< Analyser >				analysers
 	)
 	{
 		SystemProperties		properties		= new SystemProperties();
-		StaticSystem			sys 			= new StaticSystem();
-		SingleValueBallAnalyser energyAnalyser	= null;
-		SingleValueBallAnalyser speciesAnalyser	= null;
-		
+		final ExperimentRecord record = new ExperimentRecord( properties );
 		
 		// Try to get the params file
-		final File paramsFile = findParamsInInputDir( inputFile );
+		final File paramsFile = findParamsInInputDir( inputFiles[ 0 ] );
 		if( paramsFile != null )
 		{
 			System.out.println( "Using found params file: " + paramsFile );
 			processParamsFile( paramsFile, properties );
 		}
 		
-		try
+		for( File inputFile : inputFiles )
 		{
-			BufferedReader input	= new BufferedReader( new FileReader( inputFile ) );
-			sys.p					= new Ball[ Integer.parseInt( input.readLine().trim() ) ];		// Read the number of atoms
+		
+			StaticSystem			sys 			= new StaticSystem();
+			SingleValueBallAnalyser energyAnalyser	= null;
+			SingleValueBallAnalyser speciesAnalyser	= null;
 			
-			// Set up two analysers that are going to take on values from the input file
-			energyAnalyser			= new SingleValueBallAnalyser( new String( "Particle Energies" ), sys.p.length );
-			speciesAnalyser			= new SingleValueBallAnalyser( new String( "Particle Species" ), sys.p.length );
 			
-			input.readLine();										// Skip over cell repeat information
-			final Matrix3		latticeMatrix = getLatticeMatrix( input );	// Get the lattice cell matrix
-			
-			// Set the system properties to use as the bounding box
-			final Aabb	bb 	= new Aabb( latticeMatrix );
-			//final Vector3	min = bb.getMin();
-			//final Vector3	max = bb.getMax();
-
-			if( properties.periodic )
+			try
 			{
-				final Vector3	translateBy	= new Vector3( PERIODIC_FRACTIONAL_MIN * bb.xRange, PERIODIC_FRACTIONAL_MIN * bb.yRange, 0d );
-				bb.translate( translateBy );
-			}
-			
-			if( properties.periodic )
-			{
-				properties.supercell	= new CellPeriodicXY( bb );
-			}
-			
-			StringTokenizer stok;
-			String			token;
-			for( int i=0; i < sys.p.length; i++ )
-			{
-				stok = new StringTokenizer( input.readLine() );
-				Vector3 pos = new Vector3(
-					processFractionalCoordinate( Double.parseDouble( stok.nextToken() ) ),
-					processFractionalCoordinate( Double.parseDouble( stok.nextToken() ) ),
-					Double.parseDouble( stok.nextToken() )
-				);
-				// Now convert the position from fractional to absoloute values
-				pos = latticeMatrix.appliedTo( pos );
-
-				speciesAnalyser.setBallValue( i, Double.parseDouble( stok.nextToken() ) );				// Species
-
-				sys.p[i] = new Ball( pos, Color.gray );
+				BufferedReader input	= new BufferedReader( new FileReader( inputFile ) );
+				sys.p					= new Ball[ Integer.parseInt( input.readLine().trim() ) ];		// Read the number of atoms
 				
-				// Now let's get the energy of the atom
-				stok.nextToken();		// Atomic mass
-				energyAnalyser.setBallValue( i, Double.parseDouble( stok.nextToken() ) );		// and finally the energy
+				// Set up two analysers that are going to take on values from the input file
+				energyAnalyser			= new SingleValueBallAnalyser( new String( "Particle Energies" ), sys.p.length );
+				speciesAnalyser			= new SingleValueBallAnalyser( new String( "Particle Species" ), sys.p.length );
 				
+				input.readLine();										// Skip over cell repeat information
+				final Matrix3		latticeMatrix = getLatticeMatrix( input );	// Get the lattice cell matrix
+				
+				// Set the system properties to use as the bounding box
+				final Aabb	bb 	= new Aabb( latticeMatrix );
+				//final Vector3	min = bb.getMin();
+				//final Vector3	max = bb.getMax();
+	
+				if( properties.periodic )
+				{
+					final Vector3	translateBy	= new Vector3( PERIODIC_FRACTIONAL_MIN * bb.xRange, PERIODIC_FRACTIONAL_MIN * bb.yRange, 0d );
+					bb.translate( translateBy );
+				}
+				
+				if( properties.periodic )
+				{
+					properties.setSupercell( new CellPeriodicXY( bb ) );
+				}
+				
+				StringTokenizer stok;
+				String			token;
+				for( int i=0; i < sys.p.length; i++ )
+				{
+					stok = new StringTokenizer( input.readLine() );
+					Vector3 pos = new Vector3(
+						processFractionalCoordinate( Double.parseDouble( stok.nextToken() ) ),
+						processFractionalCoordinate( Double.parseDouble( stok.nextToken() ) ),
+						Double.parseDouble( stok.nextToken() )
+					);
+					// Now convert the position from fractional to absoloute values
+					pos = latticeMatrix.appliedTo( pos );
+	
+					speciesAnalyser.setBallValue( i, Double.parseDouble( stok.nextToken() ) );				// Species
+	
+					sys.p[i] = new Ball( pos, Color.gray );
+					
+					// Now let's get the energy of the atom
+					stok.nextToken();		// Atomic mass
+					energyAnalyser.setBallValue( i, Double.parseDouble( stok.nextToken() ) );		// and finally the energy
+					
+				}
+				input.close();
 			}
-			input.close();
+			catch( Exception e )
+			{
+				System.out.println( "Error reading file " );
+				e.printStackTrace();
+			}
+			
+			analysers.add( energyAnalyser );
+			analysers.add( speciesAnalyser );
+			
+			sys.setSystemProperties( properties );
+			sys.determineDimensions( paramsFile == null );
+			sys.shouldAnalyse = true;
+			
+			record.addSystemSample( sys );
 		}
-		catch( Exception e )
-		{
-			System.out.println( "Error reading file " );
-			e.printStackTrace();
-		}
 		
-		analysers.add( energyAnalyser );
-		analysers.add( speciesAnalyser );
-		
-		sys.setSystemProperties( properties );
-		sys.determineDimensions( paramsFile == null );
-		sys.shouldAnalyse = true;
-		
-		final ExperimentRecord record = new ExperimentRecord( properties );
-		record.addSystemSample( sys );
 		
 		return record;
 	}
