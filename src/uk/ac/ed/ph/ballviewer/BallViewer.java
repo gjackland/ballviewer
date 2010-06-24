@@ -45,51 +45,86 @@ public class BallViewer extends JFrame implements
 ActionListener, ItemListener, TextListener, MouseListener, MouseMotionListener, MouseWheelListener,
 AttributeAttachListener, ChangeListener
 {
-	private class ControlPanel extends JPanel implements ActionListener, TextListener, ChangeListener, ItemListener
+	private class ControlPanel extends JPanel implements ActionListener, ChangeListener, ItemListener
 	{
-		private final	BallViewer		ballViewer;
+		private static final	double		DEFAULT_DEPTH	= 0.0;
+		private static final	double		DEFAULT_WIDTH	= 1.6;
+		private static final	double		DEFAULT_MARGIN	= 1.0;
 		
-		private final	JSlider			sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 1, 0 );		// Timeline slider
-		private final	JButton			bSaveImage		= new JButton( "Save Image" );			// "Save Image"   1st row is always available
-		private final	JButton			bSetZDir		= new JButton( "Set Z dir" );
+		private final			BallViewer			ballViewer;
+		private final			BallViewerFramework	framework;
+	
+		// STATE VARIABLES //////	
+		private					double		ballsize		= 1.0;		// scale factors//	
+		private					double		scale			= 1.0;
+		private 				double 		fslice			= DEFAULT_DEPTH - 0.5 * DEFAULT_WIDTH; 	
+		private 				double 		bslice			= DEFAULT_DEPTH - 0.5 * DEFAULT_WIDTH;
+		private 				double 		ffade			= fslice - DEFAULT_MARGIN;
+		private 				double 		bfade			= bslice + DEFAULT_MARGIN; 
 		
-		private final	JTextField		tfBallSize		= new JTextField( Double.toString( ballsize ), 4 );		// "ball size"
+		private 				boolean		sliceOn			= false;
+		private 				boolean		frontMarginOn	= false;
+		private 				boolean		backMarginOn	= false;
+		private 				boolean		perspectiveOn	= false;
 		
-		private final	JTextField		tfScale			= new JTextField( Double.toString( scale ), 4 );			// "scale"
+		private final			JLabel 		lSliceDepth		= new JLabel( "Depth", Label.RIGHT );
+		private final			JLabel 		lSliceWidth		= new JLabel( "Width", Label.RIGHT );
+		private final			JLabel 		lFrontMargin	= new JLabel( "Width", Label.RIGHT );
+		private final			JLabel 		lBackMargin		= new JLabel( "Width", Label.RIGHT );
+		                		
+		private final			JSlider		sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 1, 0 );		// Timeline slider
 		
-		private final	JCheckBox		cbPerspective	= new JCheckBox( "Perspective", false );	// "perspective"
+		private final			JButton		bSaveImage		= new JButton( "Save Image" );			// "Save Image"   1st row is always available
+		private final			JButton		bSetZDir		= new JButton( "Set Z dir" );
+
+		private	final			DragPad		zARDP			= new DragPad();						// "z axis DragPad"		                		
+
+		private final			JCheckBox	cbPerspective	= new JCheckBox( "Perspective", false );	// "perspective"		                			
+		private	final			JCheckBox	cbSlice			= new JCheckBox( "Slice", false );
+		private	final			JCheckBox	cbFrontMargin	= new JCheckBox( "Front margin", false );
+		private	final			JCheckBox	cbBackMargin	= new JCheckBox( "Back margin", false );	// 2nd row - most can be disabled
 		
-		private	final	DragPad			zARDP			= new DragPad();						// "z axis DragPad"
+		private final			JTextField	tfBallSize		= new JTextField( Double.toString( ballsize ), 4 );		// "ball size"		                	
+		private final			JTextField	tfScale			= new JTextField( Double.toString( scale ), 4 );			// "scale"		                	
+		private	final			JTextField	tfSliceDepth	= new JTextField( Double.toString( DEFAULT_DEPTH ), 4 );
+		private	final			JTextField	tfSliceWidth	= new JTextField( Double.toString( DEFAULT_WIDTH ), 4 );
+		private	final			JTextField	tfFrontMargin	= new JTextField( Double.toString( DEFAULT_MARGIN ), 4 );
+		private	final			JTextField	tfBackMargin	= new JTextField( Double.toString( DEFAULT_MARGIN ), 4 );
 		
-		ControlPanel( final BallViewer ballViewer )
+		
+		ControlPanel(
+			final BallViewer			ballViewer,
+			final BallViewerFramework	framework
+		)
 		{
 			this.ballViewer = ballViewer;
+			this.framework	= framework;
 			
 			this.setLayout( new GridLayout( 3, 1 ) );
 			
 			// LISTENERS //////////////////////////
 			sTimeline.addChangeListener( this );
-			imgCaptureBtn.addActionListener( this );
-			setZdirBtn.addActionListener( this );		
-			ballsizeTxt.addTextListener( this ); 
-			scaleTxt.addTextListener( this );
-			perspectiveChk.addItemListener( this ); 
+			bSaveImage.addActionListener( this );
+			bSetZDir.addActionListener( this );		
+			tfBallSize.addActionListener( this ); 
+			tfScale.addActionListener( this );
+			cbPerspective.addItemListener( this );
+			cbSlice.addItemListener( this );
+			cbFrontMargin.addItemListener( this );
+			cbBackMargin.addItemListener( this );
+			tfSliceDepth.addActionListener( this );
+			tfSliceWidth.addActionListener( this );
+			tfFrontMargin.addActionListener( this );
+			tfBackMargin.addActionListener( this );
 			
 			// TIMELINE SLIDER /////////////////////
 			sTimeline.setEnabled( false );
 			sTimeline.setMajorTickSpacing( 1 );
 			sTimeline.setSnapToTicks( true );
 			sTimeline.setPaintLabels( true );
-			
-			// DRAG PAD ////////////////////////////
-			final Dimension dims = zARDP.getSize();
-			dims.setSize( 150, dims.getHeight() );
-			zARDP.setPreferredSize( dims );
 
 			// COMPONENTS ADDING ///////////////////
 			this.add( sTimeline );
-			final GridBagLayout			gbl = new GridBagLayout();
-			final GridBagConstraints	gbc = new GridBagConstraints();
 			JPanel	row = new JPanel();
 			row.add( bSaveImage );
 			row.add( bSetZDir );
@@ -98,12 +133,79 @@ AttributeAttachListener, ChangeListener
 			row.add( new JLabel( "Scale: ", SwingConstants.RIGHT ) );
 			row.add( tfScale );
 			row.add( cbPerspective );
-			// All this just to get a decent size for zARDP
-			gbc.weightx = 1.0;
-			gbc.fill	= gbc.BOTH; 
-			gbl.setConstraints( zARDP, gbc );
 			row.add( zARDP );
 			this.add( row );
+			
+			// Next row
+			row = new JPanel( new GridLayout(1,3) );
+			JPanel p1 = new JPanel();
+			JPanel p2 = new JPanel();
+			JPanel p3 = new JPanel();
+		
+			p1.add( cbSlice );
+			p1.add( lSliceDepth ); p1.add( tfSliceDepth ); 
+			p1.add( lSliceWidth ); p1.add( tfSliceWidth );
+			p2.add( cbFrontMargin );
+			p2.add( lFrontMargin );	p2.add( tfFrontMargin );
+			p3.add( cbBackMargin ); p3.add( lBackMargin );	p3.add( tfBackMargin );
+			row.add( p1 );
+			row.add( p2 );
+			row.add( p3 );
+			this.add( row );
+			updateCheckboxes();
+			readInputs();
+		}
+		
+		private void
+		updateCheckboxes()
+		{
+			final boolean slice			= cbSlice.isSelected();
+			final boolean frontMargin	= cbFrontMargin.isSelected();		
+			final boolean backMargin	= cbBackMargin.isSelected();
+			
+			lSliceDepth.setEnabled( slice );	lSliceWidth.setEnabled( slice );
+			tfSliceDepth.setEnabled( slice );	tfSliceWidth.setEnabled( slice );
+			cbFrontMargin.setEnabled( slice ); 	cbBackMargin.setEnabled( slice );
+			lFrontMargin.setEnabled( slice && frontMargin );	lBackMargin.setEnabled( slice && backMargin );
+			tfFrontMargin.setEnabled( slice && frontMargin );	tfBackMargin.setEnabled( slice && backMargin );
+			
+			// Set state variables
+			sliceOn			= slice;
+			frontMarginOn	= frontMargin;
+			backMarginOn	= backMargin;
+			perspectiveOn	= cbPerspective.isSelected();
+		}
+		
+		private void
+		readInputs()
+		{	// if any part fails, just ignore it (use old value)
+
+			try
+			{
+				scale = Double.parseDouble( tfScale.getText() );
+				xsc = scale * frw/xrange; ysc = scale * frh/yrange; 
+			} catch (Exception e) {}
+			try
+			{
+				ballsize			= Double.parseDouble( ballsizeTxt.getText() );
+				Ball.newDiameter	= ballsize*scale*Ball.DEFAULT_DIAMETER;
+			} catch (Exception e) {}
+			try
+			{        
+				final double depth = Double.parseDouble( sliceDepthTxt.getText() );
+				final double width = Math.abs( Double.parseDouble( sliceWidthTxt.getText() ) );
+				fslice = depth -0.5*width;	bslice = depth +0.5*width;
+			} catch (Exception e) {}
+			try
+			{
+				final double fmargin = Math.abs( Double.parseDouble( frontMarginTxt.getText() ) );
+				ffade = fslice - fmargin;
+			} catch (Exception e) {}
+			try
+			{	
+				final double bmargin = Math.abs( Double.parseDouble( backMarginTxt.getText() ) );
+				bfade = bslice + bmargin;
+			} catch (Exception e) {}
 		}
 		
 		// INTERFACES ////////////////////////////////////////////////
@@ -147,15 +249,6 @@ AttributeAttachListener, ChangeListener
 //			}
 		}
 		
-		// TEXT LISTENER //////////////////////////////////////////////////////////
-		/** Responds to the textfields by reading them and updates display. */
-		public void
-		textValueChanged( final TextEvent e )
-		{
-			//readInputs();
-			//drawBalls();
-		}
-		
 		// CHANGE LISTENER ////////////////////////////////////////////////////////
 		@Override
 		public void
@@ -163,13 +256,13 @@ AttributeAttachListener, ChangeListener
 		{
 			if( e.getSource() == sTimeline )
 			{
-//			    // The slider has changed value		    
-//			    framework.tmpSetCurrentSample( sTimeline.getValue() );
-//			    
-//			    // Fire a timeline changed event
-//			    framework.eventDispatcher.notify( new TimelineEvent( sTimeline.getValue() ) );
-//			    
-//			    drawBalls();
+			    // The slider has changed value		    
+			    framework.tmpSetCurrentSample( sTimeline.getValue() );
+			    
+			    // Fire a timeline changed event
+			    framework.eventDispatcher.notify( new TimelineEvent( sTimeline.getValue() ) );
+			    
+			    ballViewer.drawBalls();
 			}
 		}
 		
@@ -177,9 +270,9 @@ AttributeAttachListener, ChangeListener
 		public void
 		itemStateChanged( final ItemEvent e )
 		{  
-			//updateCheckboxes();
-			//readInputs();
-			//drawBalls();
+			updateCheckboxes();
+			readInputs();
+			ballViewer.drawBalls();
 		}
 		
 	}
@@ -187,8 +280,8 @@ AttributeAttachListener, ChangeListener
 	private static final	String							title						= "Ball Viewer";
 
 	// The framework that underpins the GUI
-	private final			BallViewerFramework				framework;
-	                                                    	
+	private final			BallViewerFramework				framework;	
+    	
 	// The menu bar                 		            	
 	private final			JMenuBar						mBar						= new JMenuBar();
 	private final			JMenu							mFile						= new JMenu( "File" );
@@ -257,6 +350,13 @@ AttributeAttachListener, ChangeListener
 	
 	protected 				boolean							sliceOn = false, ffadeOn = false, bfadeOn = false;
 	protected 				boolean							perspective = false;
+	
+
+	final double depthDefault=0.0, 	widthDefault = 1.6, 		marginDefault = 1.0;
+	double fslice = depthDefault -0.5*widthDefault; 	
+	double bslice = depthDefault -0.5*widthDefault;
+	double ffade = fslice -marginDefault;	
+	double bfade = bslice +marginDefault; 
 	
 	public BallViewer()
 	{
@@ -416,8 +516,11 @@ AttributeAttachListener, ChangeListener
 		final JPanel mainPanel = new JPanel( new BorderLayout() );
 		mainPanel.add( info,BorderLayout.NORTH );
 		mainPanel.add( canv,BorderLayout.CENTER );
-		mainPanel.add( control,BorderLayout.SOUTH );
-		//mainPanel.add( new ControlPanel( this ), BorderLayout.SOUTH );
+		JPanel tmpPanel = new JPanel( new BorderLayout() );
+		tmpPanel.add( control, BorderLayout.NORTH );
+		//tmpPanel.add( new ControlPanel( this, framework ), BorderLayout.SOUTH );
+		//mainPanel.add( control,BorderLayout.SOUTH );
+		mainPanel.add( tmpPanel, BorderLayout.SOUTH );
 		
 		this.add( mainPanel, BorderLayout.CENTER );
 		this.add( pSidebar, BorderLayout.EAST );
@@ -484,6 +587,32 @@ AttributeAttachListener, ChangeListener
 		return true;
 	}
 	
+//	void
+//	setRenderVariables(
+//		final double		ballSize,
+//		final double		scale,
+//		final boolean		perspectiveOn,
+//		final boolean		sliceOn,
+//		final double		sliceDepth,
+//		final double		sliceWidth,
+//		final boolean		frontMarginOn,
+//		final double		frontMargin,
+//		final boolean		backMarginOn
+//		final double		backMargin
+//	)
+//	{
+//		this.ballsize	= ballsize;
+//		this.scale		= scale;
+//		this.perspectiveOn	= perspectiveOn;
+//		this.sliceOn		= sliceOn;
+//		this.sliceDepth		= sliceDepth;
+//		this.sliceWidth		= sliceWidth;
+//		this.frontMarginOn	= frontMarginOn;
+//		this.frontMargin	= frontMargin;
+//		this.backMarginOn	= backMarginOn;
+//		this.backMargin		= backMargin;
+//	}
+	
 	void updateCheckboxes()
 	{
 		boolean boo = sliceChk.getState();
@@ -500,11 +629,6 @@ AttributeAttachListener, ChangeListener
 		perspective = perspectiveChk.getState();
 	}		
 
-	final double depthDefault=0.0, 	widthDefault = 1.6, 		marginDefault = 1.0;
-	double fslice = depthDefault -0.5*widthDefault; 	
-	double bslice = depthDefault -0.5*widthDefault;
-	double ffade = fslice -marginDefault;	
-	double bfade = bslice +marginDefault; 	
 	void readInputs()
 	{	// if any part fails, just ignore it (use old value)
 		double depth,width, fmargin,bmargin;
@@ -576,7 +700,8 @@ AttributeAttachListener, ChangeListener
 	// Draw the thing! called by canv.paint, 
 	// windowActivated, mouseDragged, mouseWheelMoved, itemStateChanged, textValueChanged
 	/** Updates the ball display. */
-	public void drawBalls()
+	void
+	drawBalls()
 	{ 					 
 		if( buff!=null )
 		{ 
@@ -659,8 +784,6 @@ AttributeAttachListener, ChangeListener
 					else zsc = 1.0;
 				
 					double d=( b.diameter + b.getDiameterOffset() ) * zsc;
-					
-					//System.out.println( "Diameter: " + b.diameter + " offset: " + b.getDiameterOffset() );
 					
 					final double r=d/2;
 					final double cx = b.pos.x*zsc*xsc;
@@ -969,7 +1092,14 @@ class DragPad extends JPanel
 	private final int texthalfwidth 	= 35;	
 	private final int texthalfheight	= 4;
 	
-	DragPad() {	super();	repaint();	}
+	DragPad()
+	{
+		super();
+		
+		setPreferredSize( new Dimension( 430, 34 ) );
+		
+		repaint();
+	}
 	
 	public void paint (Graphics g)
 	{
