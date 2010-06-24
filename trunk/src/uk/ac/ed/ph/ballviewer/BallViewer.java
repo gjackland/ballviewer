@@ -317,6 +317,7 @@ AttributeAttachListener, ChangeListener
 	private final			Panel							control;
 	private final			JSlider							sTimeline		= new JSlider( JSlider.HORIZONTAL, 0, 1, 0 );		// Timeline slider
 	private final			Button							imgCaptureBtn	= new Button( "Save Image" );			// "Save Image"   1st row is always available
+	private final 			JButton							bSaveVideo		= new JButton( "Save Video" );
 	private final			TextField						ballsizeTxt		= new TextField( Double.toString( ballsize ), 2);		// "ball size"
 	private final			TextField						scaleTxt		= new TextField( Double.toString( scale ), 2 );			// "scale"
 	private final			Checkbox						perspectiveChk	= new Checkbox( "Perspective", false );	// "perspective"
@@ -477,6 +478,7 @@ AttributeAttachListener, ChangeListener
 		row = new Panel(gbl);
 		p1 = new Panel();	p2 = new Panel(); p3 = new Panel(); p4 = new Panel(); p5 = new Panel();
 		imgCaptureBtn.addActionListener(this);
+		bSaveVideo.addActionListener( this );
 		setZdirBtn.addActionListener(this);		
 		ballsizeTxt.addTextListener(this); 
 		scaleTxt.addTextListener(this);
@@ -484,6 +486,7 @@ AttributeAttachListener, ChangeListener
 		zARDP.setForeground( labelColor );
 		zARDP.addMouseListener(this);	zARDP.addMouseMotionListener(this);
 		p1.add(imgCaptureBtn);
+		p1.add( bSaveVideo );
 		p2.add(setZdirBtn);
 		p3.add(new Label("Ball size:",Label.RIGHT)); p3.add(ballsizeTxt);
 		p4.add(new Label("Scale:",Label.RIGHT)); p4.add(scaleTxt);
@@ -930,6 +933,11 @@ AttributeAttachListener, ChangeListener
 				new RenderingHints(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON) );
 			drawBalls(g); 						// draw the image 
 			JpegCreator.saveImage(bimg);  // and save it
+		}
+		else if( e.getSource() == bSaveVideo )
+		{
+			final uk.ac.ed.ph.ballviewer.video.ExportWizard wiz = new uk.ac.ed.ph.ballviewer.video.ExportWizard( this, "", null );
+			wiz.setVisible( true );
 		}
 	}
 	
