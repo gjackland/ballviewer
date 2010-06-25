@@ -97,18 +97,16 @@ class MoldyReader implements InputReader
 				
 				// Set the system properties to use as the bounding box
 				final Aabb	bb 	= new Aabb( latticeMatrix );
-				//final Vector3	min = bb.getMin();
-				//final Vector3	max = bb.getMax();
 	
 				if( properties.periodic )
 				{
 					final Vector3	translateBy	= new Vector3( PERIODIC_FRACTIONAL_MIN * bb.xRange, PERIODIC_FRACTIONAL_MIN * bb.yRange, 0d );
 					bb.translate( translateBy );
-				}
-				
-				if( properties.periodic )
-				{
 					properties.setSupercell( new CellPeriodicXY( bb ) );
+				}
+				else
+				{
+					properties.setSupercell( new CellOrdinary( bb ) );
 				}
 				
 				StringTokenizer stok;
@@ -116,11 +114,19 @@ class MoldyReader implements InputReader
 				for( int i=0; i < sys.p.length; i++ )
 				{
 					stok = new StringTokenizer( input.readLine() );
-					Vector3 pos = new Vector3(
-						processFractionalCoordinate( Double.parseDouble( stok.nextToken() ) ),
-						processFractionalCoordinate( Double.parseDouble( stok.nextToken() ) ),
-						Double.parseDouble( stok.nextToken() )
-					);
+					double x = Double.parseDouble( stok.nextToken() );
+					double y = Double.parseDouble( stok.nextToken() );
+					double z = Double.parseDouble( stok.nextToken() );
+					
+					if( properties.periodic )
+					{
+						x = processFractionalCoordinate( x );
+						y = processFractionalCoordinate( y );
+						//z = processFractionalCoordinate( z );
+					}
+					
+					Vector3 pos = new Vector3( x, y, z );
+					
 					// Now convert the position from fractional to absoloute values
 					pos = latticeMatrix.appliedTo( pos );
 	

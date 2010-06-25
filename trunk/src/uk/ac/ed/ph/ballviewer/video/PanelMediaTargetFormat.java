@@ -8,17 +8,17 @@ import javax.media.*;
 import javax.media.control.*;
 import javax.media.format.*;
 import javax.media.protocol.*;
-//import javax.media.datasink.*;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import com.sun.media.util.JMFI18N;
 import com.sun.media.ui.TabControl;
 import com.sun.media.ui.AudioFormatChooser;
 import com.sun.media.ui.VideoFormatChooser;
 
-import jmapps.ui.*;
 
-
-public class PanelMediaTargetFormat extends JMPanel implements ActionListener, ItemListener {
+public class PanelMediaTargetFormat extends JPanel implements ActionListener, ItemListener {
 
     private Processor               processor = null;
     private String                  strTargetType = PanelMediaTargetType.TYPE_OTHER;
@@ -27,7 +27,7 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
     private TrackControl            arrTrackControls [] = null;
     private String                  arrAllowContentType [] = null;
 
-    private JMPanel         panelContent;
+    private JPanel			panelContent;
     private Choice          comboContentType;
     private TabControl      tabControl;
     private Vector          vectorPanelsAudio;
@@ -39,12 +39,16 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
     private Image           imageAudioDis = null;
     private Image           imageVideoEn = null;
     private Image           imageVideoDis = null;
+    
+	private final	Dialog	parent;
 
 
-    public PanelMediaTargetFormat () {
+    public PanelMediaTargetFormat( final Dialog parent ) {
     	super ();
 
-    	try {
+		this.parent	= parent;
+    	try
+    	{	
     	    init ();
     	}
     	catch ( Exception exception ) {
@@ -67,8 +71,8 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
     	panelDescription.add ( new Label(JMFI18N.getResource("jmstudio.export.format.label1")) );
     	panelDescription.add ( new Label(JMFI18N.getResource("jmstudio.export.format.label2")) );
 
-        panelContent = new JMPanel ( new BorderLayout(6,6) );
-        panelContent.setEmptyBorder ( 6, 6, 6, 6 );
+        panelContent = new JPanel( new BorderLayout(6,6) );
+        //panelContent.setEmptyBorder ( 6, 6, 6, 6 );
         this.add ( panelContent, BorderLayout.CENTER );
 
         imageAudioEn = ImageArea.loadImage ( "audio.gif", this, true );
@@ -87,8 +91,6 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
         panelContent.removeAll ();
         buildPage ();
 
-        if ( strTargetType.equals(PanelMediaTargetType.TYPE_NETWORK) )
-            strContType = (new ContentDescriptor(ContentDescriptor.RAW_RTP)).toString ();
         if ( strTargetType.equals(PanelMediaTargetType.TYPE_SCREEN) )
             strContType = (new ContentDescriptor(ContentDescriptor.RAW)).toString ();
 
@@ -116,8 +118,9 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
                 continue;
             }
             format = panelVideo.getFormat ();
-            if ( format == null ) {
-                MessageDialog.createErrorDialog ( this.getFrame(), "Internal error. Unable to match choosen video format. Track will be disabled." );
+            if ( format == null )
+            {
+            	JOptionPane.showMessageDialog( parent, "Internal error. Unable to match choosen video format. Track will be disabled." );
                 trackControl.setEnabled ( false );
             }
             else {
@@ -136,8 +139,9 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
                 continue;
             }
             format = panelAudio.getFormat ();
-            if ( format == null ) {
-                MessageDialog.createErrorDialog ( this.getFrame(), "Internal error. Unable to match choosen audio format. Track will be disabled." );
+            if ( format == null )
+            {
+                JOptionPane.showMessageDialog( parent, "Internal error. Unable to match choosen audio format. Track will be disabled." );
                 trackControl.setEnabled ( false );
             }
             else {
@@ -367,12 +371,6 @@ public class PanelMediaTargetFormat extends JMPanel implements ActionListener, I
                 if ( arrAllowContentType[i].equalsIgnoreCase(strContType) )
                     boolResult = true;
             }
-        }
-        else if ( strTargetType.equals(PanelMediaTargetType.TYPE_NETWORK) ) {
-            strTypeRaw = ContentDescriptor.mimeTypeToPackageName ( ContentDescriptor.RAW );
-            strTypeRawRtp = ContentDescriptor.mimeTypeToPackageName ( ContentDescriptor.RAW_RTP );
-            if ( strContType.equals(strTypeRaw)  ||  strContType.equals(strTypeRawRtp) )
-                boolResult = true;
         }
         else
             boolResult = true;

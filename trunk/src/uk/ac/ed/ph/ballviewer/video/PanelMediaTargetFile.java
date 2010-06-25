@@ -3,20 +3,25 @@ package uk.ac.ed.ph.ballviewer.video;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JPanel;
+
 import com.sun.media.util.JMFI18N;
 
 import jmapps.ui.*;
 
 
-public class PanelMediaTargetFile extends JMPanel implements ActionListener {
+public class PanelMediaTargetFile extends JPanel implements ActionListener {
 
     private TextField   textFile;
     private Button      buttonBrowse;
+    private Dialog		parent;
 
-    public PanelMediaTargetFile () {
+    public PanelMediaTargetFile( final Dialog parent )
+    {
     	super ();
 
     	try {
+    		this.parent	= parent;
     	    init ();
     	}
     	catch ( Exception exception ) {
@@ -74,9 +79,11 @@ public class PanelMediaTargetFile extends JMPanel implements ActionListener {
     	String			strDir;
 
     	strFile = textFile.getText ();
-    	dlgFile = new FileDialog ( getFrame(),
-                        JMFI18N.getResource("jmstudio.export.targetfile.filedialog"),
-                        FileDialog.SAVE );
+    	dlgFile = new FileDialog (
+			parent,
+			JMFI18N.getResource("jmstudio.export.targetfile.filedialog"),
+			FileDialog.SAVE
+		);
     	dlgFile.setFile ( strFile );
     	dlgFile.show ();
 

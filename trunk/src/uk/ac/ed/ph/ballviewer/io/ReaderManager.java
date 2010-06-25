@@ -104,7 +104,8 @@ public final class ReaderManager
 				}
 				catch( Exception e )
 				{
-					System.err.println( "Error reading file:\n"+e.toString() );
+					System.err.println( "Error loading experiment: "+e.toString() );
+					e.printStackTrace();
 					return null;
 				}
 				

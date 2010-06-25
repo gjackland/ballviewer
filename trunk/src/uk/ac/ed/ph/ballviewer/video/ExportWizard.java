@@ -1,15 +1,24 @@
 package uk.ac.ed.ph.ballviewer.video;
 
-import java.util.*;
 import java.awt.*;
+
 import java.awt.event.*;
+
+import java.io.IOException;
+
+import java.lang.IllegalArgumentException;
+
+import java.util.*;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import javax.media.*;
 import javax.media.format.*;
 import javax.media.control.*;
 import javax.media.protocol.*;
 import javax.media.datasink.*;
-import javax.media.rtp.*;
+//import javax.media.rtp.*;
 
 import com.sun.media.util.JMFI18N;
 import com.sun.media.ui.PlayerWindow;
@@ -19,168 +28,188 @@ import com.sun.media.ui.PlayerWindow;
 //import jmapps.jmstudio.*;
 
 
-public class ExportWizard extends WizardDialog implements ControllerListener, DataSinkListener {
+public class ExportWizard extends WizardDialog implements ControllerListener, DataSinkListener
+{
+	private static final	String					STR_TARGET_TYPE		= JMFI18N.getResource("jmstudio.export.type.file");
 
-    protected PanelMediaSource          panelSource;
-    protected PanelMediaTargetType      panelTargetType;
-    protected PanelMediaTargetFormat    panelTargetFormat;
-    protected PanelMediaTargetFile      panelTargetFile;
-
-    protected String                    strTitle = JMFI18N.getResource("jmstudio.export.title");
-
-    protected Processor                 processor = null;
-    protected String                    strTargetType = null;
-    protected boolean                   boolChangedProcessor = false;
-    protected boolean                   boolChangedTargetType = false;
-
-    protected String                    strFailMessage = null;
-
-    protected DataSink                  dataSinkSave = null;
-    protected ProgressDialog            dlgProgressSave = null;
-    protected ProgressThread            threadProgressSave = null;
-
-    protected TransmitPlayerWindow      playerTransmit = null;
-    protected CaptureControlsDialog     dlgCaptureControls = null;
-
-    protected Vector                    vectorWindowsLeft = new Vector ();
-
-    private JMAppsCfg                   cfgJMApps = null;
+    protected				PanelMediaTargetFormat	panelTargetFormat;
+    protected				PanelMediaTargetFile    panelTargetFile;
+              		
+    protected				String					strTitle = JMFI18N.getResource("jmstudio.export.title");
+              		
+    protected 				Processor				processor = null;
+    protected 				boolean					boolChangedProcessor = false;
+              		
+    protected 				String					strFailMessage = null;
+                    		
+	private final			DataSource				dataSource;
+    protected 				DataSink				dataSinkSave = null;
+    protected 				ProgressDialog			dlgProgressSave = null;
+    protected 				ProgressThread			threadProgressSave = null;
+              				
+    protected 				Vector					vectorWindowsLeft = new Vector ();
 
 
-    public ExportWizard ( String strTitle, Frame frame, String strSourceUrl, JMAppsCfg cfgJMApps ) {
-    	super ( frame, strTitle, true, "logo.gif" );
+    public ExportWizard(
+    	final String		strTitle,
+    	final Frame			frame,
+    	final DataSource	source
+    )
+    {
+    	super( frame, strTitle, true, "logo.gif" );
+    	
+    	if( source == null )
+    	{
+    		throw new IllegalArgumentException( "DataSource for video export was null" );
+    	}
 
-        this.strTitle = strTitle;
+        this.strTitle	= strTitle;
         this.setTitle ( strTitle );
-
-        this.cfgJMApps = cfgJMApps;
-        panelSource.setJMStudioCfg ( cfgJMApps );
-        panelSource.setSourceUrl ( strSourceUrl );
+        this.dataSource	= source;
+        
+		// Create the media processor from the source
+    	createProcessor();
     }
 
-    public ExportWizard ( Frame frame, String strSourceUrl, JMAppsCfg cfgJMApps ) {
-    	this ( JMFI18N.getResource("jmstudio.export.title"), frame, strSourceUrl, cfgJMApps );
+    public ExportWizard(
+    	final Frame			frame,
+    	final DataSource	source
+    )
+    {
+    	this ( JMFI18N.getResource("jmstudio.export.title"), frame, source );
     }
 
     public Vector getWindowsLeft () {
         return ( vectorWindowsLeft );
     }
+   
 
-    protected void init () throws Exception {
+    protected void
+    init()
+    throws Exception
+    {
     	super.init ();
-
-    	panelSource = new PanelMediaSource ( cfgJMApps );
-    	panelTargetType = new PanelMediaTargetType ();
-    	panelTargetFormat = new PanelMediaTargetFormat ();
-    	panelTargetFile = new PanelMediaTargetFile ();
+    	panelTargetFormat	= new PanelMediaTargetFormat( this );
+    	panelTargetFormat.setName( "Page 1" );
+    	panelTargetFile		= new PanelMediaTargetFile( this );
+    	panelTargetFile.setName( "Page 2" );
     	this.setSize ( 480, 480 );
     	this.setLocation ( 100, 100 );
     }
+    
+    private boolean
+    createProcessor()
+    {
+    	// First connect to the data source
+    	try
+    	{
+    		dataSource.connect();
+    	}
+    	catch( IOException e )
+    	{
+    		JOptionPane.showMessageDialog(
+    			this,
+    			"Failed to connect to data source \n" + e.getMessage(),
+    			"Error",
+    			JOptionPane.ERROR_MESSAGE
+    		);
+    		e.printStackTrace();
+    		return false;
+    	}
+    	
+    	
+        // Set up the processor
+        try
+        {
+            processor = Manager.createProcessor( dataSource );
+        }
+        catch ( Exception exception )
+        {
+        	JOptionPane.showMessageDialog(
+        		this,
+        		JMFI18N.getResource("jmstudio.error.processor.create") + "\n" + exception.getMessage(),
+        		"Error",
+        		JOptionPane.ERROR_MESSAGE
+        	);
+            exception.printStackTrace ();
+            return false;
+        }
+        
+        if ( processor != null )
+        {
+            processor.addControllerListener ( this );
+            configureProcessor ();
+        }
 
-    protected Panel getFirstPage () {
-    	return ( panelSource );
+        if ( processor == null )
+        {
+            return false;
+        }
+        boolChangedProcessor = true;
+        return true;
     }
 
-    protected Panel getLastPage () {
-    	String	strTargetType;
-    	Panel	panel = null;
-
-    	strTargetType = panelTargetType.getType ();
-    	if ( strTargetType.equals(PanelMediaTargetType.TYPE_FILE) )
-            panel = panelTargetFile;
-    	else if ( strTargetType.equals(PanelMediaTargetType.TYPE_SCREEN) )
-    	    panel = panelTargetFormat;
-
-    	return ( panel );
+	@Override
+    protected JPanel
+    getFirstPage()
+    {
+    	return panelTargetFormat;
     }
 
-    protected Panel getNextPage ( Panel panelPage ) {
-    	Panel	panelPageNext = null;
-    	String	strTargetType;
+	@Override
+    protected JPanel
+    getLastPage()
+    {
+	   	return panelTargetFile;
+    }
+
+	@Override
+    protected JPanel
+    getNextPage( final JPanel panelPage )
+    {
+    	JPanel	panelPageNext = null;
 
     	if ( panelPage == null ) {
     	    panelPageNext = getFirstPage ();
     	}
-    	else if ( panelPage == panelSource ) {
-    	    panelPageNext = panelTargetType;
-    	}
-    	else if ( panelPage == panelTargetType ) {
-    	    panelPageNext = panelTargetFormat;
-    	}
     	else if ( panelPage == panelTargetFormat ) {
-    	    strTargetType = panelTargetType.getType ();
-    	    if ( strTargetType.equals(PanelMediaTargetType.TYPE_FILE) )
     	    	panelPageNext = panelTargetFile;
-    	    else if ( strTargetType.equals(PanelMediaTargetType.TYPE_SCREEN) )
-    	    	panelPageNext = null;
     	}
     	else {
     	    panelPageNext = null;
     	}
 
-    	return ( panelPageNext );
+    	return panelPageNext;
     }
 
-    protected Panel getPrevPage ( Panel panelPage ) {
-    	Panel	panelPagePrev = null;
+	@Override
+    protected JPanel
+    getPrevPage( final JPanel panelPage )
+    {
+    	JPanel	panelPagePrev = null;
 
     	if ( panelPage == null )
     	    panelPagePrev = getLastPage ();
     	else if ( panelPage == panelTargetFile )
     	    panelPagePrev = panelTargetFormat;
-    	else if ( panelPage == panelTargetFile )
-    	    panelPagePrev = panelTargetFormat;
-    	else if ( panelPage == panelTargetFormat )
-    	    panelPagePrev = panelTargetType;
-    	else if ( panelPage == panelTargetType )
-    	    panelPagePrev = panelSource;
     	else
     	    panelPagePrev = null;
 
     	return ( panelPagePrev );
     }
 
-    protected boolean onPageDone ( Panel panelPage ) {
-    	if ( panelPage == panelSource ) {
-            setCursor ( new Cursor(Cursor.WAIT_CURSOR) );
-            processor = panelSource.createProcessor ();
-            if ( processor != null ) {
-                processor.addControllerListener ( this );
-                configureProcessor ();
-            }
-            setCursor ( Cursor.getDefaultCursor() );
-
-            if ( processor == null ) {
-                panelSource.setDataSource ( null );
-                this.setTitle ( strTitle );
-                return ( false );
-            }
-            boolChangedProcessor = true;
-            this.setTitle ( strTitle + " " + panelSource.getSourceUrl() );
-            panelSource.SaveData ();
-    	}
-    	else if ( panelPage == panelTargetType ) {
-            if ( strTargetType == null  ||  !panelTargetType.getType().equals(strTargetType) ) {
-                strTargetType = panelTargetType.getType ();
-                boolChangedTargetType = true;
-            }
-    	}
-        return ( true );
-    }
-
-    protected boolean onPageActivate ( Panel panelPage ) {
+	@Override
+    protected boolean
+    onPageActivate( final JPanel panelPage ) {
         String    strContentType;
 
-    	if ( panelPage == panelSource ) {
-            this.setTitle ( strTitle );
-        }
-    	else if ( panelPage == panelTargetFormat ) {
-            if ( boolChangedProcessor == true  ||  boolChangedTargetType == true ) {
+    	if ( panelPage == panelTargetFormat )
+    	{
+            if ( boolChangedProcessor == true ) {
                 setCursor ( new Cursor(Cursor.WAIT_CURSOR) );
-                strContentType = panelSource.getDefaultContentType ();
-                panelTargetFormat.setProcessor ( processor, strContentType, strTargetType );
+                strContentType = ( new ContentDescriptor( dataSource.getContentType() ) ).toString();
+                panelTargetFormat.setProcessor ( processor, strContentType, STR_TARGET_TYPE );
                 boolChangedProcessor = false;
-                boolChangedTargetType = false;
                 setCursor ( Cursor.getDefaultCursor() );
             }
     	}
@@ -194,14 +223,7 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
         boolean    boolResult;
 
         setCursor ( new Cursor(Cursor.WAIT_CURSOR) );
-        if ( strTargetType == null )
-            boolResult = false;
-        else if ( strTargetType.equals(PanelMediaTargetType.TYPE_FILE) )
-            boolResult = doSaveFile ();
-        else if ( strTargetType.equals(PanelMediaTargetType.TYPE_SCREEN) )
-            boolResult = doPreview ();
-        else
-            boolResult = false;
+		boolResult = doSaveFile ();
         setCursor ( Cursor.getDefaultCursor() );
 
         return ( boolResult );
@@ -216,42 +238,54 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
         // wait for processor to be configured
         boolResult = waitForState ( processor, Processor.Configured );
         if ( boolResult == false ) {
-//            MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.processor.configure") + " " + strFailMessage );
-            MessageDialog.createErrorDialog ( frameOwner, strFailMessage );
+            JOptionPane.showMessageDialog(
+            	frameOwner,
+            	strFailMessage,
+            	"Error",
+            	JOptionPane.ERROR_MESSAGE
+            );
             destroyProcessor ();
         }
     }
 
-    private void realizeProcessor () {
+    private void
+    realizeProcessor()
+    {
         boolean         boolResult;
 
         if ( processor == null )
             return;
 
         // wait for processor to be configured
-        boolResult = waitForState ( processor, Processor.Realized );
+        boolResult = waitForState( processor, Processor.Realized );
         if ( boolResult == false ) {
-//            MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.processor.realize") + " " + strFailMessage );
-            MessageDialog.createErrorDialog ( frameOwner, strFailMessage );
+            JOptionPane.showMessageDialog(
+            	frameOwner,
+            	strFailMessage,
+            	"Error",
+            	JOptionPane.ERROR_MESSAGE
+            );
             destroyProcessor ();
         }
     }
 
-    private void destroyProcessor () {
+    private void destroyProcessor ()
+    {
         if ( processor == null )
             return;
-	processor.removeControllerListener(this);
+		processor.removeControllerListener(this);
         processor.close ();
         processor = null;
-        panelSource.setDataSource ( null );
     }
 
     Object stateLock = new Object();
     boolean stateFailed = false;
 
-    private synchronized boolean waitForState(Processor p, int state) {
-	StateListener sl;
-	p.addControllerListener(sl = new StateListener());
+    private synchronized boolean
+    waitForState(Processor p, int state)
+    {
+		StateListener sl;
+		p.addControllerListener(sl = new StateListener());
         stateFailed = false;
 
         if (state == Processor.Configured) {
@@ -296,7 +330,13 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
 
         dsOutput = processor.getDataOutput ();
         if ( dsOutput == null ) {
-            MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.processor.creatednooutput") );
+            JOptionPane.showMessageDialog(
+            	frameOwner,
+            	JMFI18N.getResource("jmstudio.error.processor.creatednooutput"),
+            	"Error",
+            	JOptionPane.ERROR_MESSAGE
+            );
+            
             destroyProcessor ();
             return ( false );
         }
@@ -308,7 +348,12 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
         }
         catch ( Exception exception ) {
             stopSaving ();
-            MessageDialog.createErrorDialog ( frameOwner, exception );
+            JOptionPane.showMessageDialog(
+            	frameOwner,
+            	exception,
+            	"Error",
+            	JOptionPane.ERROR_MESSAGE
+            );
             return ( false );
         }
 
@@ -348,80 +393,20 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
         }
         catch ( Exception exception ) {
             stopSaving ();
-            MessageDialog.createErrorDialog ( frameOwner, exception );
-        }
-
-        return ( true );
-    }
-    
-    protected void createTransmitWindow () {
-
-        if ( processor == null )
-            return;
-
-        playerTransmit = new TransmitPlayerWindow ( processor );
-        playerTransmit.addWindowListener ( this );
-        vectorWindowsLeft.addElement ( playerTransmit );
-    }
-
-    protected void addTransmitSessionManager ( SessionManager mngrSession,
-                        SendStream streamSend, String strStreamLabel ) {
-
-        if ( playerTransmit == null )
-            return;
-
-        playerTransmit.addSessionManager ( mngrSession, streamSend, strStreamLabel );
-    }
-
-
-
-    private boolean doPreview () {
-        DataSource    dsOutput;
-        Player        player;
-        PlayerWindow  windowPlayer;
-
-        if ( processor == null )
-            return ( false );
-
-        panelTargetFormat.updateProcessorFormat ();
-        realizeProcessor ();
-        if ( processor == null )
-            return ( false );
-
-        dsOutput = processor.getDataOutput ();
-        if ( dsOutput == null ) {
-            MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.processor.creatednooutput") );
-            destroyProcessor ();
-            return ( false );
-        }
-
-        // Create a Player with the data source
-        // Create a PlayerWindow for the Player (this will start the player)
-        // Start the processor
-        try {
-            player = javax.media.Manager.createPlayer ( dsOutput );
-            if ( player != null ) {
-                windowPlayer = new PlayerWindow ( player, JMFI18N.getResource("jmstudio.playerwindow.preview") );
-                vectorWindowsLeft.addElement ( windowPlayer );
-                windowPlayer = new PlayerWindow ( processor, JMFI18N.getResource("jmstudio.playerwindow.transcoding") );
-                vectorWindowsLeft.addElement ( windowPlayer );
-            }
-            else {
-                MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.player.create") );
-                destroyProcessor ();
-                return ( false );
-            }
-        }
-        catch ( Exception exception ) {
-            MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.player.create"), exception );
-            destroyProcessor ();
-            return ( false );
+            JOptionPane.showMessageDialog(
+            	frameOwner,
+            	exception,
+            	"Error",
+            	JOptionPane.ERROR_MESSAGE
+            );
         }
 
         return ( true );
     }
 
-    public void actionPerformed ( ActionEvent event ) {
+    public void
+    actionPerformed( final ActionEvent event )
+    {
         String        strCmd;
         Object        objectSource;
 
@@ -451,9 +436,9 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
                     + "\n" + ((ControllerErrorEvent)event).getMessage ();
 //            MessageDialog.createErrorDialogModeless ( frameOwner, strFailMessage );
         }
-        else if (event instanceof EndOfMediaEvent) {
-            if ( strTargetType.equals(PanelMediaTargetType.TYPE_FILE) )
-                stopSaving();
+        else if (event instanceof EndOfMediaEvent)
+        {
+			stopSaving();
         }
     }
 
@@ -463,7 +448,12 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
 //            MessageDialog.createInfoDialog ( frameOwner, "File has been saved." );
         } else if ( event instanceof DataSinkErrorEvent ) {
             stopSaving();
-            MessageDialog.createErrorDialog ( frameOwner, JMFI18N.getResource("jmstudio.error.processor.writefile") );
+            JOptionPane.showMessageDialog(
+            	frameOwner,
+            	JMFI18N.getResource("jmstudio.error.processor.writefile"),
+            	"Error",
+            	JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -471,13 +461,6 @@ public class ExportWizard extends WizardDialog implements ControllerListener, Da
         Object          objSource;
 
         objSource = event.getSource ();
-        if ( objSource == playerTransmit ) {
-            if ( dlgCaptureControls != null ) {
-                dlgCaptureControls.dispose ();
-                dlgCaptureControls = null;
-            }
-            playerTransmit = null;
-        }
         if ( getAction().equals(WizardDialog.ACTION_CANCEL) )
             destroyProcessor ();
     }

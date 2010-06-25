@@ -8,14 +8,16 @@ import uk.ac.ed.ph.ballviewer.math.*;
  */
 public class CellOrdinary extends SystemCell
 {
-	private Aabb		aabb;
+
+	public CellOrdinary()
+	{}	
 	
-	
-	public CellOrdinary(
+	public
+	CellOrdinary(
 		final Aabb	aabb
 	)
 	{
-		this.aabb = aabb;
+		super( aabb );
 	}
 	
 	@Override

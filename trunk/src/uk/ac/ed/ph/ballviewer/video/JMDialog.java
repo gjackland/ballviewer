@@ -3,6 +3,8 @@ package uk.ac.ed.ph.ballviewer.video;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JPanel;
+
 import com.sun.media.util.JMFI18N;
 
 
@@ -103,13 +105,13 @@ public class JMDialog extends Dialog  implements ActionListener, WindowListener 
         return ( frameOwner );
     }
 
-    protected JMPanel createButtonPanel ( String arrActions[] ) {
+    protected JPanel createButtonPanel ( String arrActions[] ) {
         int         i;
         int         nCount;
-        JMPanel     panelButtons;
+        JPanel     panelButtons;
         Button      button;
 
-        panelButtons = new JMPanel ( new GridLayout(1,0,12,6) );
+        panelButtons = new JPanel ( new GridLayout(1,0,12,6) );
         nCount = arrActions.length;
         for ( i = 0;  i < nCount;  i++ ) {
             button = new Button ( arrActions[i] );
