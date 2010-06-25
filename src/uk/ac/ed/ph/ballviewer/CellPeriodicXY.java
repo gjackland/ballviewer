@@ -8,14 +8,17 @@ import uk.ac.ed.ph.ballviewer.math.*;
  */
 public class CellPeriodicXY extends SystemCell
 {
-	private Aabb		aabb;
-	
+	public
+	CellPeriodicXY()
+	{
+		super();
+	}
 	
 	public CellPeriodicXY(
 		final Aabb	aabb
 	)
 	{
-		this.aabb = aabb;
+		super( aabb );
 	}
 	
 	public Aabb

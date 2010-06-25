@@ -53,7 +53,16 @@ abstract class CellLatticeCore implements CellLattice
 		final int k
 	)
 	{
-		return list[ i ][ j ][ k ]; 
+		try
+		{
+			return list[ i ][ j ][ k ]; 
+		}
+		catch( IndexOutOfBoundsException e )
+		{
+			System.err.println( "Index out of bounds: X = " + i + " Y = " + j + " Z = " + k );
+			e.printStackTrace();
+			return new ArrayList< Positionable >( 0 );
+		}
 	}
 	 
 	public void add(

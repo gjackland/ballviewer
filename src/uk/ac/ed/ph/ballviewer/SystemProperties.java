@@ -14,6 +14,11 @@ public class SystemProperties
 	
 	public boolean		periodic = false;
 	
+	public
+	SystemProperties()
+	{
+		supercell = new CellOrdinary();
+	}
 	
 	public void
 	setSupercell( final SystemCell supercell )

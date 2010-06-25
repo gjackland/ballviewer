@@ -11,10 +11,10 @@ class CellLatticeOrdinary extends CellLatticeCore
 	/** Creates a new CellLattice with cells of size cs, covering the 3d range given.*/ 
 	public CellLatticeOrdinary(
 		final SystemCell	supercell,
-		final double 		cs
+		final double 		cellSize
 	)
 	{
-		super( supercell, cs ); 
+		super( supercell, cellSize ); 
 		System.out.println("Ordinary Lattice "+X+" "+Y+" "+Z); 
 	} 
 
@@ -22,24 +22,35 @@ class CellLatticeOrdinary extends CellLatticeCore
 	protected void
 	getDimensions()
 	{ 
-		X = (int)Math.ceil( aabb.xRange / cellSize );	 
-		Y = (int)Math.ceil( aabb.yRange / cellSize );	 
-		Z = (int)Math.ceil( aabb.zRange / cellSize );
-		cx = cy = cz = cellSize; 
+		X = ( int )Math.floor( aabb.xRange / cellSize );	cx = aabb.xRange / X; 
+		Y = ( int )Math.floor( aabb.yRange / cellSize );	cy = aabb.yRange / Y; 
+		Z = ( int )Math.floor( aabb.zRange / cellSize );	cz = aabb.zRange / Z; 
 	}
 	
 	@Override
 	protected void
 	setLatticeEdges()
 	{ 
-		for (int i=0; i<=X+1; i++) for (int j=0; j<=Y+1; j++) { 
-			list[i][j][0]= new ArrayList< Positionable >( 0 ); list[i][j][Z+1]= new ArrayList< Positionable >(0); 
-		} 
-		for (int i=0; i<=X+1; i++) for (int k=0; k<=Z+1; k++) { 
-			list[i][0][k]= new ArrayList< Positionable >(0); list[i][Y+1][k]= new ArrayList< Positionable >(0); 
-		} 
-		for (int j=0; j<=Y+1; j++) for (int k=0; k<=Z+1; k++) { 
-			list[0][j][k]= new ArrayList< Positionable >(0); list[X+1][j][k]= new ArrayList< Positionable >(0); 
-		} 
+		for (int i=0; i<=X+1; i++)
+		{
+			for (int j=0; j<=Y+1; j++)
+			{ 
+				list[i][j][0]= new ArrayList< Positionable >( 0 ); list[i][j][Z+1]= new ArrayList< Positionable >(0); 
+			}
+		}
+		for (int i=0; i<=X+1; i++)
+		{
+			for (int k=0; k<=Z+1; k++)
+			{ 
+				list[i][0][k]= new ArrayList< Positionable >(0); list[i][Y+1][k]= new ArrayList< Positionable >(0); 
+			} 
+		}
+		for (int j=0; j<=Y+1; j++)
+		{
+			for (int k=0; k<=Z+1; k++)
+			{ 
+				list[0][j][k]= new ArrayList< Positionable >(0); list[X+1][j][k]= new ArrayList< Positionable >(0);
+			}
+		}
 	} 
 }

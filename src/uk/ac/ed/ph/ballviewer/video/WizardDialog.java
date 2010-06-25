@@ -4,6 +4,8 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JPanel;
+
 import com.sun.media.util.JMFI18N;
 
 
@@ -17,24 +19,30 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     private String      strResultAction = ACTION_CANCEL;
     private String      strImage;
 
-    private JMPanel     panelPages;
+    private JPanel		panelPages;
     private Button		buttonBack;
     private Button		buttonNext;
     private Button		buttonFinish;
     private Button		buttonCancel;
 
-    private Vector		vectorPages = null;
-    private Panel		panelCurPage = null;
-    private CardLayout  layoutCard;
+    private Vector< JPanel >	vectorPages = null;
+    private JPanel				panelCurPage = null;
+    private CardLayout  		layoutCard;
 
-    protected Frame         frameOwner = null;
+    protected Frame         	frameOwner = null;
 
 
     public WizardDialog ( Frame frameOwner, String strTitle, boolean boolModal, String strImage ) {
     	this ( frameOwner, strTitle, boolModal, strImage, null );
     }
 
-    public WizardDialog ( Frame frameOwner, String strTitle, boolean boolModal, String strImage, Panel arrPages[] ) {
+    public WizardDialog(
+    	final Frame		frameOwner,
+    	final String	strTitle,
+    	final boolean	boolModal,
+    	final String	strImage,
+    	final JPanel	arrPages[] )
+    {
     	super ( frameOwner, strTitle, boolModal );
 
         this.frameOwner = frameOwner;
@@ -52,42 +60,52 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	return ( strResultAction );
     }
 
-    public Panel getCurrentPage () {
+    public JPanel
+    getCurrentPage ()
+    {
     	return ( panelCurPage );
     }
 
-    public void setPages ( Panel arrPages[] ) {
+    public void
+    setPages( final JPanel arrPages[] ) {
     	int		i;
     	int		nCount;
 
-    	if ( arrPages != null ) {
+    	if( arrPages != null )
+    	{
     	    panelCurPage = null;
     	    nCount = arrPages.length;
-    	    vectorPages = new Vector ();
+    	    vectorPages = new Vector< JPanel >( nCount );
     	    for ( i = 0;  i < nCount;  i++ )
-    	    	vectorPages.addElement ( arrPages[i] );
+    	    {
+    	    	vectorPages.addElement( arrPages[i] );
+    	    	arrPages[ i ].setName( "Page " + i );
+    	    }
+    	    	
     	}
 
     	setNextPage ();
     }
 
-    protected void init () throws Exception {
-    	Panel		panel;
-    	Panel		panelContent;
+    protected void
+    init()
+    throws Exception
+    {
+    	JPanel		panel;
+    	JPanel		panelContent;
         ImageArea       imageArea;
         Image           image;
 
-        this.setBackground ( Color.lightGray );
     	this.setLayout ( new BorderLayout(6,6) );
         this.setResizable ( false );
 //    	this.addWindowListener ( this );
 
-    	panelContent = new Panel ( new BorderLayout(6,6) );
+    	panelContent = new JPanel ( new BorderLayout(6,6) );
         panelContent.setBackground ( Color.lightGray );
     	this.add ( panelContent, BorderLayout.CENTER );
 
         if ( strImage != null ) {
-            panel = new Panel ( new BorderLayout() );
+            panel = new JPanel ( new BorderLayout() );
     	    panelContent.add ( panel, BorderLayout.WEST );
 
             image = ImageArea.loadImage ( strImage, this, true );
@@ -97,21 +115,22 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
         }
 
     	layoutCard = new CardLayout ( 6, 6 );
-    	panelPages = new JMPanel ( layoutCard );
-        panelPages.setEmptyBorder ( 6, 6, 6, 6 );
+    	panelPages = new JPanel ( layoutCard );
     	panelContent.add ( panelPages, BorderLayout.CENTER );
 
     	panel = createPanelButtons ();
     	panelContent.add ( panel, BorderLayout.SOUTH );
     }
 
-    private Panel createPanelButtons () {
-    	Panel	panel;
-    	Panel	panelButtons;
+    private JPanel
+    createPanelButtons()
+    {
+    	JPanel	panel;
+    	JPanel	panelButtons;
 
-    	panelButtons = new Panel ( new FlowLayout(FlowLayout.RIGHT) );
+    	panelButtons = new JPanel ( new FlowLayout(FlowLayout.RIGHT) );
 
-    	panel = new Panel ( new GridLayout(1,0,6,6) );
+    	panel = new JPanel ( new GridLayout(1,0,6,6) );
     	panelButtons.add ( panel );
 
     	buttonBack = new Button ( ACTION_BACK );
@@ -133,8 +152,10 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	return ( panelButtons );
     }
 
-    protected void setNextPage () {
-    	Panel	panelPage;
+    protected void
+    setNextPage ()
+    {
+    	JPanel	panelPage;
 
     	if ( panelCurPage != null  &&  onPageDone(panelCurPage) == false )
             return;
@@ -142,16 +163,21 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	setPage ( panelPage );
     }
 
-    protected void setPrevPage () {
-    	Panel	panelPage;
+    protected void
+    setPrevPage () {
+    	JPanel	panelPage;
 
     	panelPage = getPrevPage ( panelCurPage );
     	setPage ( panelPage );
     }
 
-    private void setPage ( Panel panelPage ) {
+    private void
+    setPage( final JPanel panelPage )
+    {
     	if ( panelPage == null )
     	    return;
+
+		System.out.println( "Set page got called with " + panelPage );
 
     	panelCurPage = panelPage;
     	onPageActivate ( panelCurPage );
@@ -183,11 +209,14 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	panelCurPage.validate ();
     }
 
-    protected boolean onPageDone ( Panel panelPage ) {
+    protected boolean
+    onPageDone( final JPanel panelPage )
+    {
         return ( true );
     }
 
-    protected boolean onPageActivate ( Panel panelPage ) {
+    protected boolean
+    onPageActivate( final JPanel panelPage ) {
         return ( true );
     }
 
@@ -195,27 +224,30 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
         return ( true );
     }
 
-    protected Panel getFirstPage () {
-    	Panel	panelPage = null;
+    protected JPanel
+    getFirstPage() {
+    	JPanel	panelPage = null;
 
     	if ( vectorPages != null  &&  !vectorPages.isEmpty() ) {
-    	    panelPage = (Panel) vectorPages.firstElement ();
+    	    panelPage = ( JPanel ) vectorPages.firstElement ();
     	}
     	return ( panelPage );
     }
 
-    protected Panel getLastPage () {
-    	Panel	panelPage = null;
+    protected JPanel
+    getLastPage() {
+    	JPanel	panelPage = null;
 
     	if ( vectorPages != null  &&  !vectorPages.isEmpty() ) {
-    	    panelPage = (Panel) vectorPages.lastElement ();
+    	    panelPage = vectorPages.lastElement ();
     	}
     	return ( panelPage );
     }
 
-    protected Panel getNextPage ( Panel panelPage ) {
+    protected JPanel
+    getNextPage( final JPanel panelPage ) {
     	int		nIndex;
-    	Panel	panelPageNext = null;
+    	JPanel	panelPageNext = null;
 
     	if ( panelPage == null ) {
     	    panelPageNext = getFirstPage ();
@@ -223,14 +255,15 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	else if ( vectorPages != null  &&  !vectorPages.isEmpty() ) {
     	    nIndex = vectorPages.indexOf ( panelPage );
     	    if ( nIndex >= 0  &&  nIndex < vectorPages.size() - 1 )
-    	    	panelPageNext = (Panel) vectorPages.elementAt ( nIndex + 1 );
+    	    	panelPageNext = vectorPages.elementAt ( nIndex + 1 );
     	}
     	return ( panelPageNext );
     }
 
-    protected Panel getPrevPage ( Panel panelPage ) {
+    protected JPanel
+    getPrevPage( final JPanel panelPage ) {
     	int		nIndex;
-    	Panel	panelPagePrev = null;
+    	JPanel	panelPagePrev = null;
 
     	if ( panelPage == null ) {
     	    panelPagePrev = getLastPage ();
@@ -238,19 +271,23 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	else if ( vectorPages != null  &&  !vectorPages.isEmpty() ) {
     	    nIndex = vectorPages.indexOf ( panelPage );
     	    if ( nIndex > 0  &&  nIndex < vectorPages.size() )
-    	    	panelPagePrev = (Panel) vectorPages.elementAt ( nIndex - 1 );
+    	    	panelPagePrev = vectorPages.elementAt ( nIndex - 1 );
     	}
     	return ( panelPagePrev );
     }
 
-    protected boolean isFirstPage ( Panel panelPage ) {
+    protected boolean
+    isFirstPage( final JPanel panelPage )
+    {
     	boolean		boolResult;
 
     	boolResult = (panelPage == getFirstPage());
     	return ( boolResult );
     }
 
-    protected boolean isLastPage ( Panel panelPage ) {
+    protected boolean
+    isLastPage( final JPanel panelPage )
+    {
     	boolean		boolResult;
 
     	boolResult = (panelPage == getLastPage());

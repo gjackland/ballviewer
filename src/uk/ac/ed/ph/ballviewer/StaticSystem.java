@@ -106,8 +106,7 @@ public class StaticSystem
 		{
 			for( Ball b : p )
 			{  
-				final Vector3 v = b.pos();
-				aabb.grow( v );
+				aabb.grow( b.pos(), 0.00001d );
 			}
 			System.out.println("min,max done "+ new Date());
 		}

@@ -36,6 +36,10 @@ import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
 import uk.ac.ed.ph.ballviewer.event.TimelineEvent;
 import uk.ac.ed.ph.ballviewer.event.TimelineListener;
 
+import uk.ac.ed.ph.ballviewer.video.BufferedImageDataSource;
+import uk.ac.ed.ph.ballviewer.video.BufferedImagePushBufferStream;
+import uk.ac.ed.ph.ballviewer.video.ExportWizard;
+
 /** 
  * This is a viewer for 3d configurations of objects, especially balls. <br>
  * Gets input from mouse dragging and from input components
@@ -832,6 +836,26 @@ AttributeAttachListener, ChangeListener
 		g.dispose();
 	}
 	
+	private BufferedImage[]
+	generateSystemImages()
+	{
+		final BufferedImage[] images = new BufferedImage[ framework.getExperimentRecord().getNumerOfSamples() ];
+		for( int i = 0; i < images.length; ++i )
+		{
+			framework.tmpSetCurrentSample( i );
+			final BufferedImage bimg = new BufferedImage( frw, frh, BufferedImage.TYPE_INT_RGB );
+			final Graphics2D g = bimg.createGraphics();
+			
+			g.addRenderingHints( // antialiasing produces a much smoother picture
+				new RenderingHints(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON) );
+				
+			drawBalls( g ); 						// draw the image
+			images[ i ] = bimg;
+			
+		}
+		return images;
+	}
+	
 	public static void main( String arg[] )
 	{	
 		System.out.println( "\nStarting App: " + new Date() );
@@ -936,7 +960,8 @@ AttributeAttachListener, ChangeListener
 		}
 		else if( e.getSource() == bSaveVideo )
 		{
-			final uk.ac.ed.ph.ballviewer.video.ExportWizard wiz = new uk.ac.ed.ph.ballviewer.video.ExportWizard( this, "", null );
+			final BufferedImage[]	images = generateSystemImages();
+			final ExportWizard wiz = new ExportWizard( this, new BufferedImageDataSource( new BufferedImagePushBufferStream( images ) ) );
 			wiz.setVisible( true );
 		}
 	}
@@ -1104,7 +1129,7 @@ class DragPad extends JPanel
 	{
 		super();
 		
-		setPreferredSize( new Dimension( 430, 34 ) );
+		//setPreferredSize( new Dimension( 430, 34 ) );
 		
 		repaint();
 	}

@@ -3,6 +3,8 @@ package uk.ac.ed.ph.ballviewer.video;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JPanel;
+
 import com.sun.media.util.JMFI18N;
 
 
@@ -70,9 +72,9 @@ public class ProgressDialog extends JMDialog {
     }
 
     private void init () throws Exception {
-        Panel          panel;
-        Panel          panelGrid;
-        Panel          panelComp;
+        JPanel          panel;
+        JPanel          panelGrid;
+        JPanel          panelComp;
         Button         button;
         Dimension      dimDialog;
         Dimension      dimScreen;
@@ -81,8 +83,8 @@ public class ProgressDialog extends JMDialog {
         this.setLayout ( new BorderLayout() );
         this.setBackground ( Color.lightGray );
 
-        panel = new JMPanel ( new BorderLayout(6,6) );
-        ((JMPanel)panel).setEmptyBorder ( 6, 6, 6, 6 );
+        panel = new JPanel( new BorderLayout(6,6) );
+        //((JMPanel)panel).setEmptyBorder ( 6, 6, 6, 6 );
         if ( nMaxPos > nMinPos ) {
             this.add ( panel, BorderLayout.CENTER );
             progressBar = new ProgressBar ( nMinPos, nMaxPos );
@@ -95,15 +97,15 @@ public class ProgressDialog extends JMDialog {
             labelProgress = new Label ( strMessage );
             panel.add ( labelProgress, BorderLayout.NORTH );
             if (component != null) {
-                panelComp = new Panel( new FlowLayout() );
+                panelComp = new JPanel( new FlowLayout() );
                 panel.add(panelComp, BorderLayout.CENTER);
                 panelComp.add(component);
             }
         }
 
-        panel = new Panel ( new FlowLayout(FlowLayout.CENTER) );
+        panel = new JPanel ( new FlowLayout(FlowLayout.CENTER) );
         this.add ( panel, BorderLayout.SOUTH );
-        panelGrid = new Panel ( new GridLayout(1,0,6,6) );
+        panelGrid = new JPanel ( new GridLayout(1,0,6,6) );
         panel.add ( panelGrid );
         buttonPause = new Button ( ACTION_PAUSE );
         buttonPause.addActionListener ( listener );
@@ -115,7 +117,7 @@ public class ProgressDialog extends JMDialog {
         button.addActionListener ( listener );
         panelGrid.add ( button );
 
-        panel = new Panel ();
+        panel = new JPanel ();
         this.add ( panel, BorderLayout.NORTH );
 
         this.pack ();

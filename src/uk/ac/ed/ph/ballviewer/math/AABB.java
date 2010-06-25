@@ -9,11 +9,11 @@ import uk.ac.ed.ph.ballviewer.*;
  */
 public class Aabb
 {
-	private final Vector3		min		= new Vector3();
-	private final Vector3		max		= new Vector3();
-	public  final double 		xRange;
-	public  final double 		yRange;
-	public  final double 		zRange;
+	private final 	Vector3		min		= new Vector3();
+	private final 	Vector3		max		= new Vector3();
+	public			double 		xRange;
+	public			double 		yRange;
+	public 			double 		zRange;
 	
 	
 	public Aabb(
@@ -63,6 +63,24 @@ public class Aabb
 		return max;
 	}
 	
+	public double
+	getXRange()
+	{
+		return xRange;
+	}
+	
+	public double
+	getYRange()
+	{
+		return yRange;
+	}
+	
+	public double
+	getZRange()
+	{
+		return zRange;
+	}
+	
 	public Vector3
 	getCentre()
 	{
@@ -89,35 +107,48 @@ public class Aabb
 	 */
 	public void
 	grow(
-		final Vector3	newPoint
+		final Vector3	newPoint,
+		final double 	epsilon
 	)
 	{
 		// X
-		if( newPoint.x < min.x )
+		final double minX = newPoint.x - epsilon;
+		final double maxX = newPoint.x + epsilon;
+		if( minX < min.x )
 		{
-			min.x = newPoint.x;
+			xRange += min.x - minX;
+			min.x = minX;
 		}
-		else if( newPoint.x > max.x )
+		else if( ( newPoint.x + epsilon ) > max.x )
 		{
-			max.x = newPoint.x;
+			xRange += maxX - max.x;
+			max.x = maxX;
 		}
 		// Y
+		final double minY = newPoint.y - epsilon;
+		final double maxY = newPoint.y + epsilon;
 		if( newPoint.y < min.y )
 		{
-			min.y = newPoint.y;
+			yRange += min.y - minY;
+			min.y = minY;
 		}
-		else if( newPoint.z > max.x )
+		else if( newPoint.y > max.y )
 		{
-			max.z = newPoint.z;
+			yRange += maxY - max.y;
+			max.y = maxY;
 		}
-		// Z		
+		// Z
+		final double minZ = newPoint.z - epsilon;
+		final double maxZ = newPoint.z + epsilon;		
 		if( newPoint.z < min.z )
 		{
-			min.z = newPoint.z;
+			zRange += min.z - minZ;
+			min.z = minZ;
 		}
-		if( newPoint.y > max.y )
+		else if( newPoint.z > max.z )
 		{
-			max.y = newPoint.y;
+			zRange += maxZ - max.z;
+			max.z = maxZ;
 		}
 
 	}

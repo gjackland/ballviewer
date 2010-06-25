@@ -64,7 +64,7 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 			Format.NOT_SPECIFIED	// Endian - byte ordering
 			);
 			
-
+		thread = new Thread( this );
 	}
 	
 	void
@@ -136,14 +136,14 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 				buffer.setData( outdata );
 			}
 			
-			outdata	= images[ seqNo ].getRGB(
-				0,				// Start X
-				0,				// Start Y
-				size.width,		// Width
-				size.height,	// Height
-				null,			// RGB array to write to
-				0,				// Offset into the rgb array
-				size.width		// Scanline stride of the rgb array
+			images[ seqNo ].getRGB(
+				0,						// Start X
+				0,						// Start Y
+				size.width,				// Width
+				size.height,			// Height
+				( int[] )outdata,		// RGB array to write to
+				0,						// Offset into the rgb array
+				size.width				// Scanline stride of the rgb array
 			);
 			
 			buffer.setFormat( rgbFormat );
