@@ -23,7 +23,8 @@ public final class ReaderManager
 		TXT( new TxtReader() ),
 		DAT( new DatReader() ),
 		LAT( new LatReader() ),
-		DUN( new DunReader() );
+		DUN( new DunReader() ),
+		TRAC( new TracReader() );
 		
 		private final InputReader			reader;
 		

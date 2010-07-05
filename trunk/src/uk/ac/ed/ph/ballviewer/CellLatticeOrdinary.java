@@ -2,6 +2,8 @@ package uk.ac.ed.ph.ballviewer;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.ph.ballviewer.util.Lib;
+
 /*
  *	Ordinary cell lattice with no boundaries
  *
@@ -22,9 +24,9 @@ class CellLatticeOrdinary extends CellLatticeCore
 	protected void
 	getDimensions()
 	{ 
-		X = ( int )Math.floor( aabb.xRange / cellSize );	cx = aabb.xRange / X; 
-		Y = ( int )Math.floor( aabb.yRange / cellSize );	cy = aabb.yRange / Y; 
-		Z = ( int )Math.floor( aabb.zRange / cellSize );	cz = aabb.zRange / Z; 
+		X = ( int )Lib.max( Math.floor( aabb.xRange / cellSize ), 1.0 );	cx = aabb.xRange / X; 
+		Y = ( int )Lib.max( Math.floor( aabb.yRange / cellSize ), 1.0 );	cy = aabb.yRange / Y; 
+		Z = ( int )Lib.max( Math.floor( aabb.zRange / cellSize ), 1.0 );	cz = aabb.zRange / Z; 
 	}
 	
 	@Override

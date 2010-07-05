@@ -7,8 +7,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import java.util.StringTokenizer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.StringTokenizer;
 
 import uk.ac.ed.ph.ballviewer.Ball;
 import uk.ac.ed.ph.ballviewer.ExperimentRecord;
@@ -26,7 +27,7 @@ public final class TracReader implements InputReader
 	public String[]
 	getSupportedExtensions()
 	{
-		return new String[]{ ".trac" };
+		return new String[]{ "trac" };
 	}
 	
 	@Override
@@ -42,27 +43,45 @@ public final class TracReader implements InputReader
 		}
 		final File inputFile = inputFiles[ 0 ];
 		
-		SystemProperties		properties		= new SystemProperties();
-		StaticSystem			sys 			= new StaticSystem();		
+		SystemProperties			properties		= new SystemProperties();
+		ArrayList< ArrayList< Ball > >	allBalls	= new ArrayList< ArrayList< Ball > >( 30 );
 
 		try
 		{
 			BufferedReader input	= new BufferedReader( new FileReader( inputFile ) );
-			sys.p					= new Ball[ Integer.parseInt( input.readLine().trim() ) ];		// Read the number of atoms
-			
-			input.readLine();										// Skip over cell repeat information
-			
-			// Set the system properties to use as the bounding box
-			//final Aabb	bb 	= new Aabb( latticeMatrix );
 			
 			StringTokenizer stok;
 			String			token;
-			for( int i=0; i < sys.p.length; i++ )
+			while( true )
 			{
-				stok = new StringTokenizer( input.readLine() );
+				final String line = input.readLine();
+				if( line == null )
+				{
+					break;
+				}
 				
-				// Now let's get the energy of the atom
-				stok.nextToken();		// Atomic mass				
+				stok = new StringTokenizer( line );
+				final Vector3	pos = new Vector3();
+				
+				pos.x	= Double.valueOf( stok.nextToken() );
+				pos.y	= Double.valueOf( stok.nextToken() );
+				pos.z	= Double.valueOf( stok.nextToken() );
+				
+				final int frameNo	= ( int )( double )Double.valueOf( stok.nextToken() );
+				final int ballId	= ( int )( double )Double.valueOf( stok.nextToken() );
+				
+				ArrayList< Ball > balls;
+				try
+				{
+					balls = allBalls.get( frameNo );
+				}
+				catch( Exception e )
+				{
+					balls = new ArrayList< Ball >( 5 );
+					allBalls.add( balls );
+				}
+				
+				balls.add( new Ball( pos, Color.gray ) );
 			}
 			input.close();
 		}
@@ -71,14 +90,31 @@ public final class TracReader implements InputReader
 			System.out.println( "Error reading file " );
 			e.printStackTrace();
 		}
-
 		
-		sys.setSystemProperties( properties );
-		sys.determineDimensions( true );
-		sys.shouldAnalyse = true;
-		
-		final ExperimentRecord record = new ExperimentRecord( properties );
-		record.addSystemSample( sys );
+		ArrayList< StaticSystem >	systems 	= new ArrayList< StaticSystem >( 30 );
+		final ExperimentRecord		record		= new ExperimentRecord( properties );
+		for( int i = 0; i < allBalls.size(); ++i )
+		{
+			final ArrayList< Ball > balls = allBalls.get( i );
+			if( balls != null )
+			{	
+				StaticSystem sys;
+				try
+				{
+					sys = systems.get( i );
+				}
+				catch( final Exception e )
+				{
+					sys = new StaticSystem();
+					sys.setSystemProperties( new SystemProperties() );
+					sys.determineDimensions( true );
+					sys.shouldAnalyse = false;
+				}
+				sys.p = new Ball[ balls.size() ];
+				balls.toArray( sys.p );
+				record.addSystemSample( sys );
+			}
+		}
 		
 		return record;
 	}

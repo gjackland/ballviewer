@@ -9,6 +9,7 @@ import java.lang.Thread;
 import javax.media.Buffer;
 import javax.media.Control;
 import javax.media.Format;
+import javax.media.Time;
 
 import javax.media.format.RGBFormat;
 import javax.media.format.VideoFormat;
@@ -32,6 +33,8 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 	private 		Thread					thread;
 	private			Control[]				controls	= new Control[ 0 ];
 	private			boolean 				finished	= false;
+	private final	long 					contentLength;
+	private final 	Time					duration;
 
 	
 	public
@@ -62,8 +65,13 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 			size.width,				// Line stride (number of array elements between video lines)
 			VideoFormat.FALSE,		// Flipped - whether video frames are vertically flipped
 			Format.NOT_SPECIFIED	// Endian - byte ordering
-			);
-			
+		);
+		
+		// The total size (in bytes) of the data contained in this stream
+		// i.e. num frames * bytes per frame
+		contentLength	= images.length * maxDataLength * 4;
+		duration		= new Time( ( double )images.length / ( double )frameRate );
+		
 		thread = new Thread( this );
 	}
 	
@@ -72,8 +80,8 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 	{
 		synchronized ( this )
 		{
+			System.out.println( "start called " + start );
 		    this.running 	= start;
-		    this.finished	= false;
 		    if( running && !thread.isAlive() )
 		    {
 				thread = new Thread( this );
@@ -83,6 +91,19 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 		}
 	}
 
+	public Time
+	getDuration()
+	{
+		return duration;
+	}
+	
+	private void
+	reset()
+	{
+		System.out.println( "Resetting" );
+		finished		= false;
+		seqNo			= 0;		// Reset the sequence
+	}
 	
 	// INTERFACES ///////////////////////////////////////////////
 	
@@ -99,7 +120,7 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 	public long
 	getContentLength()
 	{
-		return LENGTH_UNKNOWN;
+		return contentLength;
 	}
 	
 	@Override
@@ -126,6 +147,7 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 	{
 		synchronized( this )
 		{
+			System.out.println( "SeqNo " + seqNo );
 			Object outdata = buffer.getData();
 			
 			// Deal with invalid input
@@ -157,7 +179,9 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 			{
 				seqNo		= 0;
 				finished	= true;
+				buffer.setEOM( true );
 			}
+			
 		}
 	}
 
@@ -201,6 +225,8 @@ public class BufferedImagePushBufferStream implements PushBufferStream, Runnable
 				} catch (InterruptedException ise) {}
 		    }
 		} // while( running )
+		// Finished running so reset
+		reset();
 	} // run
 	
 	// CONTROLS /////////////////////////////////////////////////////

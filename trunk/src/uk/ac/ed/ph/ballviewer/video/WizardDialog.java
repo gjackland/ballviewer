@@ -1,9 +1,18 @@
 package uk.ac.ed.ph.ballviewer.video;
 
 import java.util.*;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.Image;
+
 import java.awt.event.*;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.sun.media.util.JMFI18N;
@@ -20,16 +29,14 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     private String      strImage;
 
     private JPanel		panelPages;
-    private Button		buttonBack;
-    private Button		buttonNext;
-    private Button		buttonFinish;
-    private Button		buttonCancel;
+    private JButton		buttonBack;
+    private JButton		buttonNext;
+    private JButton		buttonFinish;
+    private JButton		buttonCancel;
 
     private Vector< JPanel >	vectorPages = null;
     private JPanel				panelCurPage = null;
     private CardLayout  		layoutCard;
-
-    protected Frame         	frameOwner = null;
 
 
     public WizardDialog ( Frame frameOwner, String strTitle, boolean boolModal, String strImage ) {
@@ -45,7 +52,6 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     {
     	super ( frameOwner, strTitle, boolModal );
 
-        this.frameOwner = frameOwner;
         this.strImage = strImage;
     	try {
     	    init ();
@@ -80,8 +86,7 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	    {
     	    	vectorPages.addElement( arrPages[i] );
     	    	arrPages[ i ].setName( "Page " + i );
-    	    }
-    	    	
+    	    }    	    	
     	}
 
     	setNextPage ();
@@ -133,19 +138,19 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     	panel = new JPanel ( new GridLayout(1,0,6,6) );
     	panelButtons.add ( panel );
 
-    	buttonBack = new Button ( ACTION_BACK );
+    	buttonBack = new JButton ( ACTION_BACK );
     	buttonBack.addActionListener ( this );
     	panel.add ( buttonBack );
 
-    	buttonNext = new Button ( ACTION_NEXT );
+    	buttonNext = new JButton ( ACTION_NEXT );
     	buttonNext.addActionListener ( this );
     	panel.add ( buttonNext );
 
-    	buttonFinish = new Button ( ACTION_FINISH );
+    	buttonFinish = new JButton ( ACTION_FINISH );
     	buttonFinish.addActionListener ( this );
     	panel.add ( buttonFinish );
 
-    	buttonCancel = new Button ( ACTION_CANCEL );
+    	buttonCancel = new JButton ( ACTION_CANCEL );
     	buttonCancel.addActionListener ( this );
     	panel.add ( buttonCancel );
 
@@ -176,8 +181,6 @@ public class WizardDialog extends JMDialog /*implements WindowListener, ActionLi
     {
     	if ( panelPage == null )
     	    return;
-
-		System.out.println( "Set page got called with " + panelPage );
 
     	panelCurPage = panelPage;
     	onPageActivate ( panelCurPage );

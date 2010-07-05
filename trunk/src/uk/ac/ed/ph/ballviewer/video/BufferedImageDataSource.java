@@ -9,15 +9,14 @@ import javax.media.protocol.PushBufferStream;
 
 public class BufferedImageDataSource extends PushBufferDataSource
 {
-	private static final	String							CONTENT_TYPE	= "raw";
-	private static final	Time							duration		= DURATION_UNKNOWN;
 	
-	private final			Object[]						controls		= new Object[ 0 ];
+	private final		Object[]						controls		= new Object[ 0 ];
 	                                    					
-	private					boolean 						connected		= false;
-	private					boolean 						running			= false;
-	private					BufferedImagePushBufferStream	stream			= null;
-	private 				BufferedImagePushBufferStream[]	streams;
+	private	final		Time							duration;
+	private				boolean 						connected		= false;
+	private				boolean 						running			= false;
+	private				BufferedImagePushBufferStream	stream			= null;
+	private 			BufferedImagePushBufferStream[]	streams;
 	
 	public
 	BufferedImageDataSource(
@@ -25,7 +24,10 @@ public class BufferedImageDataSource extends PushBufferDataSource
 	)
 	{
 		this.stream = stream;
+		duration	= stream.getDuration();
 	}
+	
+	// INTERFACES ///////////////////////////////////////////////////
 	
 	@Override
 	public
@@ -36,7 +38,7 @@ public class BufferedImageDataSource extends PushBufferDataSource
 			System.err.println( "Error: DataSource not connected" );
 			return null;
 		}
-		return CONTENT_TYPE;
+		return stream.getContentDescriptor().getContentType();
 	}
 	
 	@Override

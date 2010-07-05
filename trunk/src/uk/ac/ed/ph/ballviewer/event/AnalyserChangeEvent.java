@@ -2,6 +2,11 @@ package uk.ac.ed.ph.ballviewer.event;
 
 import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 
+/**
+ *
+ *	Event fired when the state of an analyser has changed.
+ *
+ */
 public class AnalyserChangeEvent implements BallViewerEvent< AnalyserChangeListener >
 {
 	private final Analyser		source;		// The analyser whos state has changed

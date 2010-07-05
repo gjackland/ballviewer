@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
+Class-path: lib/jmf.jar
+Name: uk/ac/ed/ph/ballviewer/BallViewer.class
 Main-Class: uk.ac.ed.ph.ballviewer.BallViewer
-Class-path: .

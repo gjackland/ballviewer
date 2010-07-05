@@ -8,8 +8,9 @@ import java.util.Set;
 
 import java.lang.Class;
 
-import uk.ac.ed.ph.ballviewer.StaticSystem;
 import uk.ac.ed.ph.ballviewer.BallViewerFramework;
+import uk.ac.ed.ph.ballviewer.ExperimentRecord;
+import uk.ac.ed.ph.ballviewer.StaticSystem;
 
 import uk.ac.ed.ph.ballviewer.event.AnalyserChangeEvent;
 import uk.ac.ed.ph.ballviewer.event.AnalyserChangeListener;
@@ -17,8 +18,11 @@ import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
 import uk.ac.ed.ph.ballviewer.event.AttributeAttachListener;
 import uk.ac.ed.ph.ballviewer.event.TimelineEvent;
 import uk.ac.ed.ph.ballviewer.event.TimelineListener;
+//import uk.ac.ed.ph.ballviewer.event.NewExperimentEvent;
+//import uk.ac.ed.ph.ballviewer.event.NewExperimentListener;
 
-public final class AnalysisManager implements AnalyserChangeListener, AttributeAttachListener, TimelineListener
+public final class AnalysisManager implements
+AnalyserChangeListener, AttributeAttachListener, TimelineListener
 {
 	private static final ArrayList< Class< ? extends Analyser > > defaultAnalyserRegistry	=
 		new ArrayList< Class< ? extends Analyser > >();
@@ -68,8 +72,6 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		BallViewerFramework.eventDispatcher.listen( AnalyserChangeEvent.class, this );
 		BallViewerFramework.eventDispatcher.listen( AttributeAttachEvent.class, this );
 		BallViewerFramework.eventDispatcher.listen( TimelineEvent.class, this );
-		
-		//reset();
 	}
 	
 	public void
@@ -239,7 +241,6 @@ public final class AnalysisManager implements AnalyserChangeListener, AttributeA
 		// TODO: Not sure this is the right place to do this, but possibly
 		attribute.resetToDefault( framework.getSystem().getBalls() );
 	}
-	
 	
 	// END INTERFACES //////////////////////////////////////////////////////
 }
