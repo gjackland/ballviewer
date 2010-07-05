@@ -25,7 +25,14 @@ public class ProgressDialog extends JMDialog {
     private Component         component = null;
 
 
-    public ProgressDialog ( Frame frame, String strTitle, int nMin, int nMax, ActionListener listener ) {
+    public ProgressDialog(
+    	final Frame				frame,
+    	final String			strTitle,
+    	final int				nMin,
+    	final int				nMax,
+    	final ActionListener	listener
+    )
+    {
         super ( frame, strTitle, false );
 
         nMinPos = nMin;
@@ -39,7 +46,14 @@ public class ProgressDialog extends JMDialog {
         }
     }
 
-    public ProgressDialog ( Frame frame, String strTitle, String strMessage, Component component, ActionListener listener ) {
+    public ProgressDialog (
+    	final Frame				frame,
+    	final String			strTitle,
+    	final String			strMessage,
+    	final Component			component,
+    	final ActionListener	listener
+    )
+    {
         super ( frame, strTitle, false );
 
         this.strMessage = strMessage;

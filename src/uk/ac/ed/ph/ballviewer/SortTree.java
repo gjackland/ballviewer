@@ -62,10 +62,18 @@ public class SortTree {
 	 * Incompatible with <code>getNextSmallest()</code>! 
 	 */
 	public void findNextLargest() {
-		while (true) {
-			if (found==true) { // if we are still on the old (found) node, can't go right
-				if (curr.left!=null) {  prev = curr; curr = curr.left; }  // if possible, go left 
-				else {prev = curr; curr = curr.parent; }                  // otherwise, go up
+		while (true)
+		{
+			if (found==true)
+			{ // if we are still on the old (found) node, can't go right
+				if (curr.left!=null)
+				{
+					prev = curr; curr = curr.left;
+				}  // if possible, go left 
+				else
+				{
+					prev = curr; curr = curr.parent;
+				}                  // otherwise, go up
 				found=false;
 			}               
 			else if (prev==curr.right || (prev==curr.parent && curr.right==null) ) {
@@ -79,16 +87,25 @@ public class SortTree {
 			else if (curr.left!=null)  
 				{ prev = curr; curr = curr.left; }	//or if possible, go left
 			else 
-				{prev = curr; curr = curr.parent; } //otherwise go up
+			{
+				prev = curr; curr = curr.parent;
+			} //otherwise go up
 		}
 	}
 	/** 
 	 * Focusses on the node having the next smallest value. <p>
 	 * Incompatible with <code>getNextLargest()</code>! 
 	 */
-	public void findNextSmallest() {  // just swap right for left 
+	public void findNextSmallest()
+	{  // just swap right for left 
 		while (true) {
-			if (found==true) { // if we are still on the old (found) node, can't go left
+			if( total < 3 )
+			{
+				found = true;
+				curr	= root;
+				return;
+			}
+			else if (found==true) { // if we are still on the old (found) node, can't go left
 				if (curr.right!=null) {  prev = curr; curr = curr.right; } // if possible, go right
 				else {prev = curr; curr = curr.parent; }                   // otherwise, go up
 				found=false;
@@ -108,7 +125,10 @@ public class SortTree {
 		}
 	}
 	/** Returns the object referenced by the focussed node. */
-	public Object object() { return curr.object; }
+	public Object object()
+	{
+		return curr != null ? curr.object : null;
+	}
 	/** Returns the value (eg depth) associated with the focussed node. */
 	public double value() { return curr.value; }
 }				

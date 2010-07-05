@@ -23,21 +23,21 @@ public class Ball extends SystemObject implements Positionable
 	@AttributeDefault( name = "Transparency" )
 	public static final double	DEFAULT_ALPHA			= 10d;
 	
-	static double		newDiameter = DEFAULT_DIAMETER;
+	public static double	newDiameter = DEFAULT_DIAMETER;
 
-	Vector3				pos;
-	double				diameter	= DEFAULT_DIAMETER_OFFSET;
-	private Color 		colour		= DEFAULT_COLOUR;
-	private double 		alpha		= DEFAULT_ALPHA;
-	
-	private double		diameterOffset;		// Tmp
+	Vector3			pos;
+	private double			diameter	= DEFAULT_DIAMETER_OFFSET;
+	private Color 			colour		= DEFAULT_COLOUR;
+	private double 			alpha		= DEFAULT_ALPHA;
+	                    	
+	private double			diameterOffset;		// Tmp
 	
 	Ball ball;   // this is for drawing plane arrows; there shouldn't be more than 1 arrow per Ball
 	
 	public Ball() {
 		this.pos		= new Vector3();
 		this.diameter	= newDiameter;
-		this.colour		= randomColour();
+		this.colour		= Color.gray;
 	}
 	public Ball(Color c)
 	{
@@ -113,6 +113,12 @@ public class Ball extends SystemObject implements Positionable
 		return alpha;
 	}
 	
+	public double
+	getDiameter()
+	{
+		return diameter;
+	}
+	
 	@AttributeMethod( name = "Size" )
 	public void
 	setDiameterOffset( final double offset )
@@ -124,21 +130,6 @@ public class Ball extends SystemObject implements Positionable
 	getDiameterOffset()
 	{
 		return diameterOffset;
-	}
-
-	static Color randomColour()
-	{ 
-		double r = Math.random() * 10.0;
-		if (r<1) return Color.RED;
-		else if (r<2) return Color.MAGENTA;
-		else if (r<3) return Color.BLUE;
-		else if (r<4) return Color.GREEN;
-		else if (r<5) return Color.YELLOW;
-		else if (r<6) return Color.ORANGE.darker();
-		else if (r<7) return Color.WHITE;
-		else if (r<8) return Color.GRAY;
-		else if (r<9) return Color.PINK;
-		else  return Color.CYAN;
 	}
 	
 	public Vector3 pos() { return pos; }

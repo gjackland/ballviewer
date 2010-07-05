@@ -39,6 +39,7 @@ public final class ExperimentRecord
 	public void
 	addSystemSample( final StaticSystem sample )
 	{
+		System.out.println( "Adding sample to record" );
 		systemSamples.add( sample );
 		sample.initialise();
 	}

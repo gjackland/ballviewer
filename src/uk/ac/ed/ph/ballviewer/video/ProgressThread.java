@@ -9,10 +9,11 @@ import javax.media.*;
 */
 public class ProgressThread extends Thread {
 
-    private Processor       processor;
-    private ProgressDialog  dlgProgress;
-    private boolean         boolTerminate = false;
-    private boolean         boolSuspended = false;
+    private final	Processor       processor;
+    private final	ProgressDialog  dlgProgress;
+    private final 	boolean 		useMilli;
+    private 		boolean         boolTerminate = false;
+    private 		boolean         boolSuspended = false;
 
 
     /**
@@ -20,9 +21,15 @@ public class ProgressThread extends Thread {
     * @param    processor      processor, that does file save
     * @param    dlgProgress    Progress dialog
     */
-    public ProgressThread ( Processor processor, ProgressDialog dlgProgress ) {
-        this.processor = processor;
-        this.dlgProgress = dlgProgress;
+    public ProgressThread(
+    	final Processor			processor,
+    	final ProgressDialog	dlgProgress,
+    	final boolean 			useMilli
+    )
+    {
+        this.processor		= processor;
+        this.dlgProgress	= dlgProgress;
+        this.useMilli		= useMilli;
     }
 
     public synchronized void terminateNormaly () {
@@ -49,7 +56,8 @@ public class ProgressThread extends Thread {
         int    nPos;
 	
         boolTerminate = false;
-        while ( !boolTerminate && !this.isInterrupted() ) {
+        while ( !boolTerminate && !this.isInterrupted() )
+        {
             try {
                 sleep ( 200 );
                 if ( boolSuspended == true ) {
@@ -58,12 +66,21 @@ public class ProgressThread extends Thread {
                             wait ();
                     }
                 }
+				if( useMilli )
+				{
+					nPos = ( int )( processor.getMediaTime().getSeconds() * 1000d );
+				}
+				else
+				{
+					nPos = ( int )processor.getMediaTime().getSeconds();
+				}
 		
-		nPos = (int) processor.getMediaTime().getSeconds();
-		dlgProgress.setCurPos ( nPos );
-            }catch ( Exception exception ) {
-		boolTerminate = true;
-		break;
+				dlgProgress.setCurPos ( nPos );
+            }
+            catch ( Exception exception )
+            {
+				boolTerminate = true;
+				break;
             }
         }
     }

@@ -21,7 +21,7 @@ class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 		registerDefaultMap( ContinuousDoubleMap.class, double.class );
 	}
 	
-	private static boolean
+	private static final boolean
 	registerDefaultMap(
 		final Class< ? extends ContinuousOutputMap >	mapperClass,
 		final Class										outputClass

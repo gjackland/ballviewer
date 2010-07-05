@@ -29,4 +29,13 @@ public class Lib
 			return a.equals( b );
 		}
 	}
+	
+	public static double
+	max(
+		final double a,
+		final double b
+	)
+	{
+		return a > b ? a : b;
+	}
 }
