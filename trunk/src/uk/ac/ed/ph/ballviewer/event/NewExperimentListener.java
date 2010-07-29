@@ -4,6 +4,5 @@ import uk.ac.ed.ph.ballviewer.ExperimentRecord;
 
 public interface NewExperimentListener
 {
-	public void
-	newExperiment( final ExperimentRecord newExperiment );
+	public void newExperiment( final ExperimentRecord newExperiment );
 }

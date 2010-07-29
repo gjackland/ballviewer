@@ -9,7 +9,6 @@ import java.util.Set;
 import java.lang.Class;
 
 import uk.ac.ed.ph.ballviewer.BallViewerFramework;
-import uk.ac.ed.ph.ballviewer.ExperimentRecord;
 import uk.ac.ed.ph.ballviewer.StaticSystem;
 
 import uk.ac.ed.ph.ballviewer.event.AnalyserChangeEvent;
@@ -21,22 +20,20 @@ import uk.ac.ed.ph.ballviewer.event.TimelineListener;
 //import uk.ac.ed.ph.ballviewer.event.NewExperimentEvent;
 //import uk.ac.ed.ph.ballviewer.event.NewExperimentListener;
 
-public final class AnalysisManager implements
-AnalyserChangeListener, AttributeAttachListener, TimelineListener
+public final class AnalysisManager implements AnalyserChangeListener, AttributeAttachListener, TimelineListener
 {
-	private static final ArrayList< Class< ? extends Analyser > > defaultAnalyserRegistry	=
-		new ArrayList< Class< ? extends Analyser > >();
-	
+	private static final ArrayList< Class< ? extends Analyser > >	defaultAnalyserRegistry	= new ArrayList< Class< ? extends Analyser > >();
+
 	static
 	{
 		// Add all the analysers that are available to all system types here
 		registerDefaultAnalyser( CrystalAnalyser.class );
 	}
-	
-	private static boolean
-	registerDefaultAnalyser( final Class< ? extends Analyser > analyserCls )
+
+	private static boolean registerDefaultAnalyser( final Class< ? extends Analyser > analyserCls )
 	{
-		// Check that the class has the required constructor i.e. default zero argumenet constructor
+		// Check that the class has the required constructor i.e. default zero
+		// argumenet constructor
 		try
 		{
 			// This will throw exception if it can't find the method
@@ -49,39 +46,37 @@ AnalyserChangeListener, AttributeAttachListener, TimelineListener
 			return false;
 		}
 	}
-	
-	private final		BallViewerFramework			framework;
-	
-	
+
+	private final BallViewerFramework							framework;
+
 	// A list of all the analysers being managed
-	private final 		ArrayList< Analyser >		analysers		= new ArrayList< Analyser >();
-	
+	private final ArrayList< Analyser >							analysers		= new ArrayList< Analyser >();
+
 	// A list of all the current ball analysers
-	private final		ArrayList< BallAnalyser >	ballAnalysers	= new ArrayList< BallAnalyser >();
-	
-	// A hashtable that maps from a class type to a list of all the analyser outputs that can be attached
+	private final ArrayList< BallAnalyser >						ballAnalysers	= new ArrayList< BallAnalyser >();
+
+	// A hashtable that maps from a class type to a list of all the analyser
+	// outputs that can be attached
 	// to a system object attribute of that type
-	private final		Hashtable< Class, HashSet< AnalyserOutput > >	outputTypeMap =
-		new Hashtable< Class, HashSet< AnalyserOutput > >();
-	
+	private final Hashtable< Class, HashSet< AnalyserOutput > >	outputTypeMap	= new Hashtable< Class, HashSet< AnalyserOutput > >();
+
 	public AnalysisManager( BallViewerFramework framework )
 	{
-		this.framework		= framework;
-		
-		// Register ourselves to receive analyser change events
+		this.framework = framework;
+
+		// Register ourselves to certain events
 		BallViewerFramework.eventDispatcher.listen( AnalyserChangeEvent.class, this );
 		BallViewerFramework.eventDispatcher.listen( AttributeAttachEvent.class, this );
 		BallViewerFramework.eventDispatcher.listen( TimelineEvent.class, this );
 	}
-	
-	public void
-	reset()
+
+	public void reset()
 	{
 		analysers.clear();
 		ballAnalysers.clear();
-		
+
 		// Let's create instances of classes from the ball analyser registry
-		for( Class< ? extends Analyser > analyserClass  : defaultAnalyserRegistry )
+		for( Class< ? extends Analyser > analyserClass : defaultAnalyserRegistry )
 		{
 			System.out.print( "Adding analyser: " + analyserClass );
 			try
@@ -96,96 +91,73 @@ AnalyserChangeListener, AttributeAttachListener, TimelineListener
 			}
 		}
 	}
-	
-	public ArrayList< Analyser >
-	getAllAnalysers()
+
+	public ArrayList< Analyser > getAllAnalysers()
 	{
 		return analysers;
 	}
-	
-	public ArrayList< BallAnalyser >
-	getBallAnalysers()
+
+	public ArrayList< BallAnalyser > getBallAnalysers()
 	{
 		return ballAnalysers;
 	}
-	
-	public void
-	addAnalysers(
-		final Collection< Analyser >	newAnalysers
-	)
+
+	public void addAnalysers( final Collection< Analyser > newAnalysers )
 	{
 		for( Analyser analyser : newAnalysers )
 		{
 			addAnalyser( analyser );
 		}
 	}
-	
-	public void
-	addAnalyser(
-		final Analyser				newAnalyser )
+
+	public void addAnalyser( final Analyser newAnalyser )
 	{
 
 		System.out.println( "Adding analyser: " + newAnalyser.getName() );
 		analysers.add( newAnalyser );
 		newAnalyser.initialise( this );
 	}
-	
-	
-	public Set< AnalyserOutput >
-	getSupportedOutputs(
-		final SysObjAttribute		attribute
-	)
+
+	public Set< AnalyserOutput > getSupportedOutputs( final SysObjAttribute attribute )
 	{
 		final HashSet< AnalyserOutput > outputs = outputTypeMap.get( attribute.getAttributeClass() );
 		return outputs != null ? outputs : new HashSet< AnalyserOutput >();
 	}
-	
-	private void
-	update(
-		final StaticSystem		system
-	)
+
+	private void update( final StaticSystem system )
 	{
 		updateBallAnalysers( system );
 	}
-	
-	private void
-	updateBallAnalysers(
-		final StaticSystem		system
-	)
+
+	private void updateBallAnalysers( final StaticSystem system )
 	{
-		for( BallAnalyser bAnalyser: ballAnalysers )
+		for( BallAnalyser bAnalyser : ballAnalysers )
 		{
 			bAnalyser.updateAttributes( system );
 		}
 	}
-	
-	
+
 	// TODO: Change this method name to registerBallAnalyser
-	public void
-	attachBallAnalyser(
-		final		BallAnalyser		newAnalyser
-	)
+	public void attachBallAnalyser( final BallAnalyser newAnalyser )
 	{
-		//System.out.println( "Attaching ball analyser: " + newAnalyser.getName() );
+		// System.out.println( "Attaching ball analyser: " +
+		// newAnalyser.getName() );
 		ballAnalysers.add( newAnalyser );
-		
-		AnalyserOutput[] outputs	= newAnalyser.getOutputs();
+
+		AnalyserOutput[] outputs = newAnalyser.getOutputs();
 		if( outputs != null )
 		{
-			for( AnalyserOutput output: newAnalyser.getOutputs() )
+			for( AnalyserOutput output : newAnalyser.getOutputs() )
 			{
 				updateOutputTypeMap( output );
 			}
 		}
 	}
-	
-	private void
-	updateOutputTypeMap(
-		final AnalyserOutput	output
-	)
+
+	private void updateOutputTypeMap( final AnalyserOutput output )
 	{
 		Set< Class > supportTypeSet = output.getSupportedAttributeTypes();
-		for( Class supportedType: supportTypeSet )
+		for( Class supportedType : supportTypeSet )
 		{
 			HashSet< AnalyserOutput > outputList = outputTypeMap.get( supportedType );
 			if( outputList == null )
@@ -196,19 +168,17 @@ AnalyserChangeListener, AttributeAttachListener, TimelineListener
 			outputList.add( output );
 		}
 	}
-	
+
 	// INTERFACES //////////////////////////////////////////////////////////
-	
+
 	@Override
-	public void
-	timelineChanged( final int currentSample )
+	public void timelineChanged( final int currentSample )
 	{
 		update( framework.getSystem() );
 	}
-	
+
 	@Override
-	public void
-	analyserStateChanged( final Analyser source )
+	public void analyserStateChanged( final Analyser source )
 	{
 		final int indexOfAnalyser = ballAnalysers.indexOf( source );
 		if( indexOfAnalyser != -1 )
@@ -216,31 +186,24 @@ AnalyserChangeListener, AttributeAttachListener, TimelineListener
 			ballAnalysers.get( indexOfAnalyser ).updateAttributes( framework.getSystem() );
 		}
 	}
-	
+
 	@Override
-	public void
-	attributeAttached(
-		final AnalyserOutput	output,
-		final SysObjAttribute	attribute
-	)
+	public void attributeAttached( final AnalyserOutput output, final SysObjAttribute attribute )
 	{
 		// Tell the analyser to update the attributes attached to each output
-		// TODO: Could make this more specific so analyser only updates a particular output
+		// TODO: Could make this more specific so analyser only updates a
+		// particular output
 		// or even a particular attribute of a particular output
 		output.getParentAnalyser().updateAttributes( framework.getSystem() );
 	}
-	
+
 	@Override
-	public void
-	attributeDetached(
-		final AnalyserOutput	output,
-		final SysObjAttribute	attribute
-	)
+	public void attributeDetached( final AnalyserOutput output, final SysObjAttribute attribute )
 	{
 		// Reset values back to defaults
 		// TODO: Not sure this is the right place to do this, but possibly
 		attribute.resetToDefault( framework.getSystem().getBalls() );
 	}
-	
+
 	// END INTERFACES //////////////////////////////////////////////////////
 }

@@ -10,53 +10,50 @@ import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 
 class DunReader implements InputReader
 {
-	public String[]
-	getSupportedExtensions()
-	{
-		return ( new String[]{ "gdf" } );
-	}
-	
 	@Override
-	public ExperimentRecord
-	getExperimentRecord(
-		final	File[]								inputFiles,
-		final	Collection< Analyser >	analysers
-	)
+	public String[] getSupportedExtensions()
+	{
+		return( new String[] { "gdf" } );
+	}
+
+	@Override
+	public ExperimentRecord getExperimentRecord( final File[] inputFiles, final Collection< Analyser > analysers )
 	{
 		if( inputFiles == null || inputFiles.length == 0 || inputFiles[ 0 ] == null )
 		{
 			return null;
 		}
 		final File inputFile = inputFiles[ 0 ];
-		
+
 		StaticSystem sys = new StaticSystem();
-		
+
 		try
 		{
-			DataInputStream input = new DataInputStream(new FileInputStream(inputFile));
-			sys.p = new Ball[input.readInt()];
-			sys.setR( (double)input.readFloat() ); //(don't need A,AA,RR unless analysing)
-			for( int i=0; i< sys.p.length; i++ )
+			DataInputStream input = new DataInputStream( new FileInputStream( inputFile ) );
+			sys.p = new Ball[ input.readInt() ];
+			sys.setR( input.readFloat() ); // (don't need A,AA,RR unless
+											// analysing)
+			for( int i = 0; i < sys.p.length; i++ )
 			{
-				final Vector3	pos		= new Vector3((double)input.readFloat(),(double)input.readFloat(), (double)input.readFloat() );
-				final Color		colour = StaticSystem.StructureType.values()[input.readInt()].colour();
-				sys.p[i] = new Ball( pos, colour );
+				final Vector3 pos = new Vector3( input.readFloat(), input.readFloat(), input.readFloat() );
+				final Color colour = StaticSystem.StructureType.values()[ input.readInt() ].colour();
+				sys.p[ i ] = new Ball( pos, colour );
 			}
 			input.close();
-			System.out.println("Ready-processed set.");
+			System.out.println( "Ready-processed set." );
 		}
 		catch( Exception e )
 		{
 			System.out.println( "Error reading file" );
 		}
-		
-		sys.shouldAnalyse=false;
-		
+
+		sys.shouldAnalyse = false;
+
 		// TODO: Deal with system properties somehow
 		final ExperimentRecord record = new ExperimentRecord( null );
 		record.addSystemSample( sys );
-		
+
 		return record;
 	}
-	
+
 }

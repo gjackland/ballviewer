@@ -8,52 +8,35 @@ import uk.ac.ed.ph.ballviewer.math.*;
  */
 public abstract class SystemCell
 {
-	protected	final Aabb	aabb;
-	
-	public
-	SystemCell()
+	protected final Aabb	aabb;
+
+	public SystemCell()
 	{
 		// Default cell has object coordinates in range 0->1
 		aabb = new Aabb( new Vector3( 0d, 0d, 0d ), new Vector3( 1d, 1d, 1d ) );
 	}
-	
-	public
-	SystemCell( final Aabb aabb )
+
+	public SystemCell( final Aabb aabb )
 	{
 		this.aabb = aabb;
 	}
-	
-	public abstract Aabb
-	getAabb();
-	
-	public abstract Vector3
-	getCentre();
-	
-	public abstract Vector3
-	getMinimumVector(
-		final Tuple3	from,
-		final Tuple3	to
-	);
-	
-	public double
-	getMinimumDistance(
-		final Tuple3		from,
-		final Tuple3		to
-	)
+
+	public abstract Aabb getAabb();
+
+	public abstract Vector3 getCentre();
+
+	public abstract Vector3 getMinimumVector( final Tuple3 from, final Tuple3 to );
+
+	public double getMinimumDistance( final Tuple3 from, final Tuple3 to )
 	{
 		return getMinimumVector( from, to ).modulus();
 	}
-	
-	public double
-	getMinimumDistanceSq(
-		final Tuple3		from,
-		final Tuple3		to
-	)
+
+	public double getMinimumDistanceSq( final Tuple3 from, final Tuple3 to )
 	{
-    	return getMinimumVector( from, to ).modulusSq();
+		return getMinimumVector( from, to ).modulusSq();
 	}
-	
-	public abstract CellLattice
-	generateCellLattice( final double cellSize );
-	
+
+	public abstract CellLattice generateCellLattice( final double cellSize );
+
 }

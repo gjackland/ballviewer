@@ -5,28 +5,28 @@ import javax.swing.*;
 
 public class ColorReflector implements ReflectionType< Color >
 {
-	private static final	Color				DEFAULT_VALUE	= Color.red;
-	private					JColorChooser		colorChooser;
-	
+	private static final Color	DEFAULT_VALUE	= Color.red;
+	private JColorChooser		colorChooser;
+
 	public ColorReflector()
 	{
 		colorChooser = new JColorChooser( DEFAULT_VALUE );
 	}
-	
-	public JComponent
-	getComponent()
+
+	@Override
+	public JComponent getComponent()
 	{
 		return colorChooser;
 	}
-	
-	public void
-	setValue( final Color value )
+
+	@Override
+	public void setValue( final Color value )
 	{
 		colorChooser.setColor( value );
 	}
-	
-	public Color
-	getValue()
+
+	@Override
+	public Color getValue()
 	{
 		return colorChooser.getColor();
 	}

@@ -4,6 +4,6 @@ import java.io.Serializable;
 
 public abstract class Options implements Cloneable, Serializable
 {
-	public abstract Object
-	clone();
+	@Override
+	public abstract Object clone();
 }

@@ -5,27 +5,27 @@ import javax.swing.JCheckBox;
 
 public class BooleanCheckBox implements ReflectionType< Boolean >
 {
-	private JCheckBox		checkBox;
-	
+	private JCheckBox	checkBox;
+
 	public BooleanCheckBox()
 	{
 		checkBox = new JCheckBox();
 	}
-	
-	public JComponent
-	getComponent()
+
+	@Override
+	public JComponent getComponent()
 	{
 		return checkBox;
 	}
-	
-	public void
-	setValue( Boolean value )
+
+	@Override
+	public void setValue( Boolean value )
 	{
 		checkBox.setSelected( value );
 	}
-	
-	public Boolean
-	getValue() throws NumberFormatException
+
+	@Override
+	public Boolean getValue() throws NumberFormatException
 	{
 		return Boolean.valueOf( checkBox.isSelected() );
 	}

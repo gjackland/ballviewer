@@ -8,50 +8,43 @@ public class DiscreteColourMap extends DiscreteOutputMap< Color >
 {
 	private final HashMap< Integer, Color >	colourMap;
 
-	DiscreteColourMap(
-		final DiscreteAnalyserOutput		analyserOutput
-	)
+	DiscreteColourMap( final DiscreteAnalyserOutput analyserOutput )
 	{
 		super( analyserOutput );
-		
+
 		final int[] possibleValues = analyserOutput.getPossibleValues();
 		colourMap = new HashMap< Integer, Color >( possibleValues.length );
-		
+
 		Integer min = 0, max = 4;
-		//getMinMax( possibleValues, min, max );
+		// getMinMax( possibleValues, min, max );
 		final int range = max - min;
-		
+
 		for( int i = 0; i < possibleValues.length; ++i )
 		{
 			colourMap.put( possibleValues[ i ], getDistributedColour( possibleValues[ i ], min, range ) );
 		}
 	}
-	
-	Color[]
-	mapValues( final int[] inValues )
+
+	@Override
+	Color[] mapValues( final int[] inValues )
 	{
 		final Color[] outColours = new Color[ inValues.length ];
-		
+
 		for( int i = 0; i < inValues.length; ++i )
 		{
 			outColours[ i ] = colourMap.get( inValues[ i ] );
 		}
-		
+
 		return outColours;
 	}
-	
-	public void
-	showOptionsDialog()
+
+	@Override
+	public void showOptionsDialog()
 	{
-		
+
 	}
-	
-	private void
-	getMinMax(
-		final int[]		possibleValues,
-		Integer			min,
-		Integer			max
-	)
+
+	private void getMinMax( final int[] possibleValues, Integer min, Integer max )
 	{
 		min = Integer.MAX_VALUE;
 		max = Integer.MIN_VALUE;
@@ -67,25 +60,15 @@ public class DiscreteColourMap extends DiscreteOutputMap< Color >
 			}
 		}
 	}
-	
-	
+
 	/**
-	 *
-	 *	Return a colour evenly distributed between the range.
-	 *
-	 *
+	 * 
+	 * Return a colour evenly distributed between the range.
+	 * 
+	 * 
 	 */
-	private Color
-	getDistributedColour(
-		final int	value,
-		final int 	min,
-		final int	range
-	)
+	private Color getDistributedColour( final int value, final int min, final int range )
 	{
-		return Color.getHSBColor(
-			( ( ( float )( value - min ) ) / ( float )range ),
-			1.0f,
-			1.0f
-		);
+		return Color.getHSBColor( ( ( ( float )( value - min ) ) / ( float )range ), 1.0f, 1.0f );
 	}
 }
