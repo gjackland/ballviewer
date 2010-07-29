@@ -9,29 +9,25 @@ import javax.media.protocol.PushBufferStream;
 
 public class BufferedImageDataSource extends PushBufferDataSource
 {
-	
-	private final		Object[]						controls		= new Object[ 0 ];
-	                                    					
-	private	final		Time							duration;
-	private				boolean 						connected		= false;
-	private				boolean 						running			= false;
-	private				BufferedImagePushBufferStream	stream			= null;
-	private 			BufferedImagePushBufferStream[]	streams;
-	
-	public
-	BufferedImageDataSource(
-		final BufferedImagePushBufferStream stream
-	)
+
+	private final Object[]					controls	= new Object[ 0 ];
+
+	private final Time						duration;
+	private boolean							connected	= false;
+	private boolean							running		= false;
+	private BufferedImagePushBufferStream	stream		= null;
+	private BufferedImagePushBufferStream[]	streams;
+
+	public BufferedImageDataSource( final BufferedImagePushBufferStream stream )
 	{
 		this.stream = stream;
-		duration	= stream.getDuration();
+		duration = stream.getDuration();
 	}
-	
+
 	// INTERFACES ///////////////////////////////////////////////////
-	
+
 	@Override
-	public
-	String getContentType()
+	public String getContentType()
 	{
 		if( !connected )
 		{
@@ -40,11 +36,9 @@ public class BufferedImageDataSource extends PushBufferDataSource
 		}
 		return stream.getContentDescriptor().getContentType();
 	}
-	
+
 	@Override
-	public void
-	connect()
-	throws IOException
+	public void connect() throws IOException
 	{
 		if( connected )
 		{
@@ -52,10 +46,9 @@ public class BufferedImageDataSource extends PushBufferDataSource
 		}
 		connected = true;
 	}
-	
+
 	@Override
-	public void
-	disconnect()
+	public void disconnect()
 	{
 		try
 		{
@@ -63,14 +56,15 @@ public class BufferedImageDataSource extends PushBufferDataSource
 			{
 				stop();
 			}
-		} catch( IOException e ) {}
+		}
+		catch( IOException e )
+		{
+		}
 		connected = false;
 	}
-	
+
 	@Override
-	public void
-	start()
-	throws IOException
+	public void start() throws IOException
 	{
 		if( !connected )
 		{
@@ -80,65 +74,60 @@ public class BufferedImageDataSource extends PushBufferDataSource
 		{
 			return;
 		}
-		running	= true;
+		running = true;
 		stream.start( true );
 	}
-	
+
 	@Override
-	public void
-	stop()
-	throws IOException
+	public void stop() throws IOException
 	{
 		if( ( !connected ) || ( !running ) )
 		{
 			return;
 		}
-		running	= false;
+		running = false;
 		stream.start( false );
 	}
-	
+
 	@Override
-	public Object[]
-	getControls()
+	public Object[] getControls()
 	{
 		return controls;
 	}
-	
+
 	@Override
-	public Object
-	getControl( String controlType )
+	public Object getControl( String controlType )
 	{
-	   try
-	   {
-			final Class  cls	= Class.forName( controlType );
-			final Object cs[]	= getControls();
+		try
+		{
+			final Class cls = Class.forName( controlType );
+			final Object cs[] = getControls();
 			for( int i = 0; i < cs.length; i++ )
 			{
-				if( cls.isInstance( cs[i] ) )
-	            return cs[ i ];
+				if( cls.isInstance( cs[ i ] ) )
+					return cs[ i ];
 			}
 			return null;
-	
-		} catch (Exception e)
-		{   // no such controlType or such control
-	     return null;
+
+		}
+		catch( Exception e )
+		{ // no such controlType or such control
+			return null;
 		}
 	}
-	
+
 	@Override
-	public Time
-	getDuration()
+	public Time getDuration()
 	{
 		return duration;
 	}
-	
+
 	@Override
-	public PushBufferStream[]
-	getStreams()
+	public PushBufferStream[] getStreams()
 	{
 		if( streams == null )
 		{
-			streams	= new BufferedImagePushBufferStream[]{ stream };
+			streams = new BufferedImagePushBufferStream[] { stream };
 		}
 		return streams;
 	}

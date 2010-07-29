@@ -10,91 +10,87 @@ import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 
 class OliReader implements InputReader
 {
-	public String[]
-	getSupportedExtensions()
-	{
-		return ( new String[]{ "oli" } );
-	}
-	
 	@Override
-	public ExperimentRecord
-	getExperimentRecord(
-		final	File[]								inputFiles,
-		final	Collection< Analyser >	analysers
-	)
+	public String[] getSupportedExtensions()
+	{
+		return( new String[] { "oli" } );
+	}
+
+	@Override
+	public ExperimentRecord getExperimentRecord( final File[] inputFiles, final Collection< Analyser > analysers )
 	{
 		if( inputFiles == null || inputFiles.length == 0 || inputFiles[ 0 ] == null )
 		{
 			return null;
 		}
 		final File inputFile = inputFiles[ 0 ];
-		
+
 		StaticSystem sys = new StaticSystem();
-		
-		System.out.println("  Assuming 3 x Coordinates + Species input" );
-		final int linelength = 72; 
-			
+
+		System.out.println( "  Assuming 3 x Coordinates + Species input" );
+		final int linelength = 72;
+
 		try
 		{
 			LineNumberReader lnr = new LineNumberReader( new FileReader( inputFile ) );
-			lnr.setLineNumber(1);
-			StreamTokenizer stok = new StreamTokenizer(lnr);
+			lnr.setLineNumber( 1 );
+			StreamTokenizer stok = new StreamTokenizer( lnr );
 			stok.parseNumbers();
 			stok.eolIsSignificant( true );
 			stok.nextToken();
 			while( stok.ttype != StreamTokenizer.TT_EOL )
 			{
 				int lineno = lnr.getLineNumber();
-				int sizlat =(int)stok.nval;
-				sys.p = new Ball[sizlat];
-				System.out.println(sizlat);
+				int sizlat = ( int )stok.nval;
+				sys.p = new Ball[ sizlat ];
+				System.out.println( sizlat );
 				stok.nextToken();
 			}
-			
-			for( int i=0; i < sys.p.length; i++ )
+
+			for( int i = 0; i < sys.p.length; i++ )
 			{
-				double x=0,y=0,z=0,mass=0,energy=0;
-				int spec=0,spin=0,sigma=0;
+				double x = 0, y = 0, z = 0, mass = 0, energy = 0;
+				int spec = 0, spin = 0, sigma = 0;
 				stok.nextToken();
 				while( stok.ttype != StreamTokenizer.TT_EOL )
 				{
-					if (stok.ttype == StreamTokenizer.TT_NUMBER)
-					x  = stok.nval;
+					if( stok.ttype == StreamTokenizer.TT_NUMBER )
+						x = stok.nval;
 					stok.nextToken();
-					if (stok.ttype == StreamTokenizer.TT_NUMBER)  
-					y  = stok.nval;
+					if( stok.ttype == StreamTokenizer.TT_NUMBER )
+						y = stok.nval;
 					stok.nextToken();
-					if (stok.ttype == StreamTokenizer.TT_NUMBER)
-					z  = stok.nval;
-					stok.nextToken();        
-					if (stok.ttype == StreamTokenizer.TT_NUMBER)
-					spec  = (int)stok.nval;
-					stok.nextToken();      
-				} 
-				
+					if( stok.ttype == StreamTokenizer.TT_NUMBER )
+						z = stok.nval;
+					stok.nextToken();
+					if( stok.ttype == StreamTokenizer.TT_NUMBER )
+						spec = ( int )stok.nval;
+					stok.nextToken();
+				}
+
 				if( spec == 1 )
 				{
-					sys.p[ i ] = new Ball( new Vector3(x,y,z), 10.0d, Color.red );
+					sys.p[ i ] = new Ball( new Vector3( x, y, z ), 10.0d, Color.red );
 				}
 				else
 				{
-					sys.p[ i ] = new Ball( new Vector3(x,y,z), Color.yellow );
+					sys.p[ i ] = new Ball( new Vector3( x, y, z ), Color.yellow );
 				}
-	
+
 			}
 		}
 		catch( Exception e )
 		{
 			System.out.println( "Error loading file" );
 		}
-		
+
 		sys.shouldAnalyse = true;
-		
+
 		// TODO: Deal with system properties somehow
 		final ExperimentRecord record = new ExperimentRecord( null );
 		record.addSystemSample( sys );
-		
+
 		return record;
 	}
-	
+
 }

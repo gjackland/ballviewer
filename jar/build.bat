@@ -1,1 +1,0 @@
-jar cvfm BallViewer.jar ../mainfest/ballviewer.mft -C ../build .

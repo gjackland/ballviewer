@@ -4,8 +4,5 @@ import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 
 public interface AnalyserChangeListener
 {
-	public void
-	analyserStateChanged(
-		final Analyser	source
-	);
+	public void analyserStateChanged( final Analyser source );
 }

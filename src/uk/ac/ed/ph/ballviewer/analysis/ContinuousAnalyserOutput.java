@@ -5,14 +5,10 @@ import java.lang.NoSuchMethodException;
 import java.util.Hashtable;
 import java.util.Set;
 
-import uk.ac.ed.ph.ballviewer.event.AttributeAttachEvent;
-import uk.ac.ed.ph.ballviewer.event.EventDispatcher;
-
 class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 {
-	private static final	Hashtable< Class, Class< ? extends ContinuousOutputMap > >	defaultMaps =
-		new Hashtable< Class, Class< ? extends ContinuousOutputMap > >();
-		
+	private static final Hashtable< Class, Class< ? extends ContinuousOutputMap > >	defaultMaps	= new Hashtable< Class, Class< ? extends ContinuousOutputMap > >();
+
 	static
 	{
 		// Define all the default maps here
@@ -20,14 +16,11 @@ class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 		registerDefaultMap( ContinuousDoubleMap.class, Double.class );
 		registerDefaultMap( ContinuousDoubleMap.class, double.class );
 	}
-	
-	private static final boolean
-	registerDefaultMap(
-		final Class< ? extends ContinuousOutputMap >	mapperClass,
-		final Class										outputClass
-	)
+
+	private static final boolean registerDefaultMap( final Class< ? extends ContinuousOutputMap > mapperClass, final Class outputClass )
 	{
-		// Check that the class has the required constructor i.e. one parameter of type ContinuousAnalyserOutput
+		// Check that the class has the required constructor i.e. one parameter
+		// of type ContinuousAnalyserOutput
 		try
 		{
 			// This will throw exception if it can't find the method
@@ -40,56 +33,45 @@ class ContinuousAnalyserOutput extends AnalyserOutput< ContinuousOutputMap >
 			return false;
 		}
 	}
-		
-	// Users can create custom continuous output maps and add them in which case they will be stored here.
-	// These take priority over any default maps that may exist.		
-	private	final			Hashtable< Class, Class< ? extends ContinuousOutputMap > >	customMaps =
-		new Hashtable< Class, Class< ? extends ContinuousOutputMap > >();
 
+	// Users can create custom continuous output maps and add them in which case
+	// they will be stored here.
+	// These take priority over any default maps that may exist.
+	private final Hashtable< Class, Class< ? extends ContinuousOutputMap > >	customMaps	= new Hashtable< Class, Class< ? extends ContinuousOutputMap > >();
 
-
-	ContinuousAnalyserOutput(
-		final String 			name,
-		final BallAnalyser		parentAnalyser
-	)
+	ContinuousAnalyserOutput( final String name, final BallAnalyser parentAnalyser )
 	{
 		super( name, parentAnalyser );
 	}
 
-	void
-	updateOutput(
-		final double[]	newValues,
-		final Object[]	objArray
-	)
+	void updateOutput( final double[] newValues, final Object[] objArray )
 	{
 		for( int i = 0; i < attachedAttributes.size(); ++i )
 		{
 			attachedAttributes.get( i ).setValues( outputMaps.get( i ).mapValues( newValues ), objArray );
 		}
 	}
-	
-	Set< Class >
-	getSupportedAttributeTypes()
+
+	@Override
+	Set< Class > getSupportedAttributeTypes()
 	{
 		final Set< Class > supportedTypes = defaultMaps.keySet();
 		supportedTypes.addAll( customMaps.keySet() );
-		
+
 		return supportedTypes;
 	}
-	
-	protected Class< ? extends ContinuousOutputMap >
-	getOutputMapForClass(
-		final Class sysObjClass
-	)
+
+	@Override
+	protected Class< ? extends ContinuousOutputMap > getOutputMapForClass( final Class sysObjClass )
 	{
 		Class< ? extends ContinuousOutputMap > map = customMaps.get( sysObjClass );
-		
+
 		// If we couldn't find it in the custom maps then use a default one
 		if( map == null )
 		{
 			map = defaultMaps.get( sysObjClass );
 		}
-		
+
 		return map;
 	}
 

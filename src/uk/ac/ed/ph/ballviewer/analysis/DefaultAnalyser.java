@@ -7,80 +7,65 @@ import uk.ac.ed.ph.ballviewer.StaticSystem;
 
 final class DefaultAnalyser extends Analyser implements BallAnalyser
 {
-	private final ArrayList< ContinuousAnalyserOutput >	continuousOutputs =
-		new ArrayList< ContinuousAnalyserOutput >();
+	private final ArrayList< ContinuousAnalyserOutput >	continuousOutputs	= new ArrayList< ContinuousAnalyserOutput >();
 
-	private final ArrayList< DiscreteAnalyserOutput >	discreteOutputs =
-		new ArrayList< DiscreteAnalyserOutput >();		
-		
-	public void
-	addAnalyserOutput(
-		final ContinuousAnalyserOutput	newOutput
-	)
+	private final ArrayList< DiscreteAnalyserOutput >	discreteOutputs		= new ArrayList< DiscreteAnalyserOutput >();
+
+	public void addAnalyserOutput( final ContinuousAnalyserOutput newOutput )
 	{
 		continuousOutputs.add( newOutput );
 	}
-	
-	public void
-	addAnalyserOutput(
-		final DiscreteAnalyserOutput	newOutput
-	)
+
+	public void addAnalyserOutput( final DiscreteAnalyserOutput newOutput )
 	{
 		discreteOutputs.add( newOutput );
 	}
-	
+
 	@Override
-	public String
-	getName()
+	public String getName()
 	{
 		return "Default Analyser";
 	}
-	
+
 	// INTERFACES ///////////////////////////////////////////////////////
-	
+
 	// ANALYSER /////////////////////////////////////////////////////////
-	
-	public void
-	initialise(
-		final AnalysisManager		manager
-	)
+
+	@Override
+	public void initialise( final AnalysisManager manager )
 	{
 		manager.attachBallAnalyser( this );
 	}
-	
-	
+
 	// BALL ANALYSER ////////////////////////////////////////////////////
-	
+
 	/**
-	 *
-	 *	Called by the Analysis Manager to tell the analyser to update 
-	 *
-	 *
+	 * 
+	 * Called by the Analysis Manager to tell the analyser to update
+	 * 
+	 * 
 	 */
 	@Override
-	public void
-	updateAttributes( final StaticSystem system )
+	public void updateAttributes( final StaticSystem system )
 	{
 		final Ball[] balls = system.getBalls();
-		
+
 		for( ContinuousAnalyserOutput out : continuousOutputs )
 		{
-			//out.updateOutput()
+			// out.updateOutput()
 		}
 	}
-	
+
 	/**
-	 *	The analyser should provide an array of outputs that can be mapped onto
-	 *	attributes of a ball e.g. ball energy can be mapped onto the ball colour
-	 *
+	 * The analyser should provide an array of outputs that can be mapped onto
+	 * attributes of a ball e.g. ball energy can be mapped onto the ball colour
+	 * 
 	 */
 	@Override
-	public AnalyserOutput[]
-	getOutputs()
+	public AnalyserOutput[] getOutputs()
 	{
-		final AnalyserOutput[] outputsArray =
-			new AnalyserOutput[ continuousOutputs.size() + discreteOutputs.size() ];
-			
+		final AnalyserOutput[] outputsArray = new AnalyserOutput[ continuousOutputs.size() + discreteOutputs.size() ];
+
 		for( int i = 0; i < continuousOutputs.size(); ++i )
 		{
 			outputsArray[ i ] = continuousOutputs.get( i );
@@ -89,9 +74,9 @@ final class DefaultAnalyser extends Analyser implements BallAnalyser
 		{
 			outputsArray[ i + discreteOutputs.size() ] = discreteOutputs.get( i );
 		}
-		
+
 		return outputsArray;
 	}
-	
+
 	// END INTERFACES ///////////////////////////////////////////////////
 }

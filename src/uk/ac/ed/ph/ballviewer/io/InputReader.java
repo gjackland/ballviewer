@@ -11,18 +11,14 @@ import uk.ac.ed.ph.ballviewer.analysis.Analyser;
 
 interface InputReader
 {
-	public String[]
-	getSupportedExtensions();
-	
+	public String[] getSupportedExtensions();
+
 	/**
-	 *
-	 *	@param inputFiles	Pass in array as some readers can handle multiple files
-	 *	@param analysers	The reader can optionally output a collection of analysers
+	 * 
+	 * @param inputFiles
+	 *            Pass in array as some readers can handle multiple files
+	 * @param analysers
+	 *            The reader can optionally output a collection of analysers
 	 */
-	public ExperimentRecord
-	getExperimentRecord(
-		final	File[]							inputFiles,
-		final	Collection< Analyser >			analysers
-	)
-	throws IOException;
+	public ExperimentRecord getExperimentRecord( final File[] inputFiles, final Collection< Analyser > analysers ) throws IOException;
 }

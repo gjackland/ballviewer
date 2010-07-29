@@ -9,48 +9,42 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JFileChooser;
 
-import uk.ac.ed.ph.ballviewer.BallViewer;
 import uk.ac.ed.ph.ballviewer.BallViewerFramework;
 
 class FileMenu extends JMenu implements ActionListener
 {
 	private final BallViewerFramework	framework;
 	private final Component				parent;
-			
-	private final JMenuItem				miOpen		= new JMenuItem( "Open" );
-	private final JMenuItem				miClose		= new JMenuItem( "Close" );
-	private final JFileChooser			fc			= new JFileChooser();
-	
-	
-	FileMenu(
-		final Component				parent,
-		final BallViewerFramework	framework )
+
+	private final JMenuItem				miOpen	= new JMenuItem( "Open" );
+	private final JMenuItem				miClose	= new JMenuItem( "Close" );
+	private final JFileChooser			fc		= new JFileChooser();
+
+	FileMenu( final Component parent, final BallViewerFramework framework )
 	{
 		super( "File" );
-		
-		this.parent		= parent;
-		this.framework	= framework;
-		
+
+		this.parent = parent;
+		this.framework = framework;
+
 		// Set up the menu items
 		miClose.setEnabled( false );
-		
+
 		// Listeners
 		miOpen.addActionListener( this );
 		miClose.addActionListener( this );
-		
+
 		// Set up all the menu items etc.
 		add( miOpen );
 		add( miClose );
 		fc.setMultiSelectionEnabled( true );
 		fc.setFileSelectionMode( JFileChooser.FILES_ONLY );
 	}
-	
-	
+
 	// INTERFACES //////////////////////////////////////////////////////////////
-	
+
 	@Override
-	public void
-	actionPerformed( final ActionEvent e )
+	public void actionPerformed( final ActionEvent e )
 	{
 		final Object source = e.getSource();
 		if( source == miOpen )
@@ -59,7 +53,7 @@ class FileMenu extends JMenu implements ActionListener
 			if( retVal == JFileChooser.APPROVE_OPTION )
 			{
 				framework.loadExperimentRecord( fc.getSelectedFiles() );
-				
+
 				miClose.setEnabled( true );
 			}
 		}
@@ -68,10 +62,10 @@ class FileMenu extends JMenu implements ActionListener
 			if( miClose.isEnabled() )
 			{
 				framework.loadExperimentRecord( null );
-				
+
 				miClose.setEnabled( false );
 			}
 		}
 	}
-	
+
 }
